@@ -4,10 +4,10 @@ import { TelegrafModule } from 'nestjs-telegraf';
 import { session } from 'telegraf';
 import botConfiguration from './bot.configuration';
 import { BotUpdate } from './bot.update';
-import { StartScene } from './scenes/start.scene';
 
 @Module({
   imports: [
+    ConfigModule.forFeature(botConfiguration),
     TelegrafModule.forRootAsync({
       inject: [botConfiguration.KEY],
       imports: [ConfigModule.forFeature(botConfiguration)],
@@ -28,6 +28,6 @@ import { StartScene } from './scenes/start.scene';
       },
     }),
   ],
-  providers: [BotUpdate, StartScene],
+  providers: [BotUpdate],
 })
 export class BotModule {}
