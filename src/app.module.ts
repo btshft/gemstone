@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import appConfiguration from './app.configuration';
 import botConfiguration from './bot/bot.configuration';
 import { BotModule } from './bot/bot.module';
 
@@ -7,7 +8,7 @@ import { BotModule } from './bot/bot.module';
   imports: [
     BotModule,
     ConfigModule.forRoot({
-      load: [botConfiguration],
+      load: [botConfiguration, appConfiguration],
     }),
   ],
   controllers: [],

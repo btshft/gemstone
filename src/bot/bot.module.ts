@@ -16,11 +16,13 @@ import { StartScene } from './scenes/start.scene';
           token: config.token,
           middlewares: [session()],
           launchOptions: {
-            webhook: {
-              domain: config.webhook.domain,
-              hookPath: config.webhook.path,
-              port: config.webhook.port,
-            },
+            webhook: config.webhook.enabled
+              ? {
+                  domain: config.webhook.domain,
+                  hookPath: config.webhook.path,
+                  port: config.webhook.port,
+                }
+              : undefined,
           },
         };
       },

@@ -15,13 +15,14 @@ async function bootstrap() {
 
   const configService = app.get<ConfigService>(ConfigService);
   const { enabled, path } = configService.get('bot.webhook');
+  const { port } = configService.get('app');
 
   if (enabled) {
     const bot = app.get(getBotToken());
     app.use(bot.webhookCallback(path));
   }
 
-  app.listen(3000);
+  app.listen(port);
 }
 
 bootstrap();
