@@ -22,7 +22,7 @@ async function bootstrap() {
     app.use(bot.webhookCallback(path));
   }
 
-  app.listen(port);
+  app.listen(port, '0.0.0.0');
 }
 
 bootstrap();
