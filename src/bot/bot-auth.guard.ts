@@ -7,9 +7,9 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { TelegrafExecutionContext } from 'nestjs-telegraf';
 import { Observable } from 'rxjs';
-import botConfiguration from '../bot.configuration';
-import { BotContext } from '../bot.context';
-import { BotException } from '../exceptions/bot.exception';
+import botConfiguration from './bot.configuration';
+import { BotContext } from './bot.context';
+import { BotException } from './bot.exception';
 
 @Injectable()
 export class BotAuthGuard implements CanActivate {
