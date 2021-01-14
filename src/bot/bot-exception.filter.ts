@@ -1,6 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { TelegrafArgumentsHost } from 'nestjs-telegraf';
-import { BotContext, SceneRouter } from './bot.context';
+import { BotContext } from './bot.context';
 import { BotException, BotFailure, Unauthorized } from './bot.exception';
 import { ErrorSceneState, ERROR_SCENE } from './scenes/error.scene';
 
@@ -20,25 +20,31 @@ export class BotExceptionFilter implements ExceptionFilter {
       }
 
       if (failure.reply) {
-        await this.navigateToError(failure.reply.message, host);
+        const { message, scene: navigation } = failure.reply;
+        const context = TelegrafArgumentsHost.create(
+          host,
+        ).getContext<BotContext>();
+
+        if (navigation) {
+          await this.navigateToError(context, message);
+        } else {
+          await context.reply(message);
+        }
+      } else {
+        this.logger.error(`${exception.name}: ${exception.message}`);
       }
-    } else {
-      this.logger.error(`${exception.name}: ${exception.message}`);
     }
   }
 
   private async navigateToError(
-    text: string,
-    host: ArgumentsHost,
+    context: BotContext,
+    message: string,
   ): Promise<void> {
-    const tgHost = TelegrafArgumentsHost.create(host);
-    const tgCtx = tgHost.getContext<BotContext>();
-    const router = new SceneRouter(tgCtx);
+    const { dialog } = context;
 
-    await router.navigate<ErrorSceneState>(ERROR_SCENE, {
-      dropHistory: true,
+    await dialog.navigate<ErrorSceneState>(ERROR_SCENE, {
       state: {
-        message: text,
+        message: message,
       },
     });
   }

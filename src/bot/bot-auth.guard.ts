@@ -30,6 +30,7 @@ export class BotAuthGuard implements CanActivate {
         from: from,
         reply: {
           message: "You're not authorized to access, sorry 👻",
+          scene: false,
         },
       });
     }

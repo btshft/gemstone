@@ -1,14 +1,12 @@
+import { Drop, Optional } from 'src/utils/utility.types';
 import { User } from 'telegraf/typings/telegram-types';
-
-type Drop<TSource, TKeys extends keyof TSource> = Omit<TSource, TKeys>;
-type Optional<T extends Record<string, any>, K extends keyof T> = Omit<T, K> &
-  Partial<Pick<T, K>>;
 
 type FailureType = 'unknown' | 'unauthorized';
 type FailureBase = {
   message: string;
   reply?: {
     message: string;
+    scene?: boolean;
   };
 };
 
@@ -20,7 +18,7 @@ type Failure<
   // eslint-disable-next-line prettier/prettier
 } & TDetails & FailureBase;
 
-export type Unknown = Failure<'unknown'>;
+export type UnknownFailure = Failure<'unknown'>;
 export type Unauthorized = Failure<
   'unauthorized',
   {
@@ -28,9 +26,11 @@ export type Unauthorized = Failure<
   }
 >;
 
-export type BotFailure = Unknown | Unauthorized;
+export type BotFailure = UnknownFailure | Unauthorized;
 
-export class BotException<TFailure extends BotFailure = Unknown> extends Error {
+export class BotException<
+  TFailure extends BotFailure = UnknownFailure
+> extends Error {
   constructor(public failure: TFailure) {
     super(failure.message);
   }
@@ -38,9 +38,8 @@ export class BotException<TFailure extends BotFailure = Unknown> extends Error {
   public static unauthorized(
     failure: Optional<Drop<Unauthorized, 'type'>, 'message'>,
   ): BotException<Unauthorized> {
-    const message =
-      failure.message ||
-      `unauthorized request from user ${failure.from.username}`;
+    // eslint-disable-next-line prettier/prettier
+    const message = failure.message || `unauthorized request from user ${failure.from.username}`;
 
     return new BotException<Unauthorized>({
       type: 'unauthorized',

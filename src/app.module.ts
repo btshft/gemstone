@@ -6,6 +6,8 @@ import botConfiguration from './bot/bot.configuration';
 import { BotModule } from './bot/bot.module';
 import { HealthModule } from './health/health.module';
 import { IgModule } from './ig/ig.module';
+import { ProtectorModule } from './protector/protector.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { IgModule } from './ig/ig.module';
     BotModule,
     HealthModule,
     IgModule,
+    StoreModule,
+    ProtectorModule,
   ],
   controllers: [],
   providers: [],

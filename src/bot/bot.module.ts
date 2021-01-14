@@ -6,6 +6,7 @@ import { session } from 'telegraf';
 import botConfiguration from './bot.configuration';
 import { BotUpdate } from './bot.update';
 import { ScenesModule } from './scenes/scenes.module';
+import { wizard } from './wizard/dialog.wizard';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { ScenesModule } from './scenes/scenes.module';
       useFactory: async (config: ConfigType<typeof botConfiguration>) => {
         return {
           token: config.token,
-          middlewares: [session()],
+          middlewares: [session(), wizard()],
           launchOptions: {
             webhook: config.webhook.enabled
               ? {

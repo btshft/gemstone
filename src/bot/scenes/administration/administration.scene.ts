@@ -1,6 +1,8 @@
+import { Logger } from '@nestjs/common';
 import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
-import { BotContext, SceneRouter } from 'src/bot/bot.context';
-import { Extra, Markup } from 'telegraf';
+import { BotContext } from 'src/bot/bot.context';
+import { IgService } from 'src/ig/ig.service';
+import { START_SCENE } from '../start.scene';
 
 export const ADMINISTRATION_SCENE = 'ADMINISTRATION_SCENE';
 
@@ -12,11 +14,13 @@ const ACTIONS = {
 
 @Scene(ADMINISTRATION_SCENE)
 export class AdministrationScene {
+  constructor(private ig: IgService) {}
+
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
-    const router = new SceneRouter(ctx);
+    const { dialog } = ctx;
     const message = `Select option`;
-    const markup = Markup.inlineKeyboard([
+    const buttons = [
       {
         callback_data: ACTIONS.Login,
         text: 'Login',
@@ -32,14 +36,24 @@ export class AdministrationScene {
         text: 'Back',
         hide: false,
       },
-    ]);
+    ];
 
-    await router.reply(message, Extra.markup(markup));
+    await dialog.ui(message, buttons);
   }
 
   @Action(ACTIONS.Back)
   async back(@Ctx() ctx: BotContext): Promise<void> {
-    const router = new SceneRouter(ctx);
-    await router.return();
+    const { dialog } = ctx;
+    await dialog.navigate(START_SCENE);
+  }
+
+  @Action(ACTIONS.Login)
+  async login(@Ctx() ctx: BotContext): Promise<void> {
+    try {
+      await this.ig.authenticate();
+    } catch (err) {
+      new Logger(AdministrationScene.name).error({ error: err });
+    }
+    await ctx.reply('Ok');
   }
 }
