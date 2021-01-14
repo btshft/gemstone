@@ -1,24 +1,18 @@
 import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { TelegrafArgumentsHost } from 'nestjs-telegraf';
 import { BotContext } from './bot.context';
-import { BotException, BotFailure, Unauthorized } from './bot.exception';
+import { BotException } from './bot.exception';
 import { ErrorSceneState, ERROR_SCENE } from './scenes/error.scene';
-
-function isUnauthorized(failure: BotFailure): failure is Unauthorized {
-  return failure.type === 'unauthorized';
-}
 
 @Catch()
 export class BotExceptionFilter implements ExceptionFilter {
-  private readonly logger: Logger = new Logger('bot.exceptions');
+  private readonly logger: Logger = new Logger('Bot');
 
   async catch(exception: Error, host: ArgumentsHost): Promise<void> {
-    if (exception instanceof BotException) {
-      const { message, failure } = <BotException>exception;
-      if (isUnauthorized(failure)) {
-        this.logger.error(`[Unauthorized]: ${message}`);
-      }
+    this.logger.error(`${exception.name}: ${exception.message}`);
 
+    if (exception instanceof BotException) {
+      const { failure } = <BotException>exception;
       if (failure.reply) {
         const { message, scene: navigation } = failure.reply;
         const context = TelegrafArgumentsHost.create(
@@ -30,8 +24,6 @@ export class BotExceptionFilter implements ExceptionFilter {
         } else {
           await context.reply(message);
         }
-      } else {
-        this.logger.error(`${exception.name}: ${exception.message}`);
       }
     }
   }
@@ -42,10 +34,6 @@ export class BotExceptionFilter implements ExceptionFilter {
   ): Promise<void> {
     const { dialog } = context;
 
-    await dialog.navigate<ErrorSceneState>(ERROR_SCENE, {
-      state: {
-        message: message,
-      },
-    });
+    await dialog.navigate<ErrorSceneState>(ERROR_SCENE, { message: message });
   }
 }

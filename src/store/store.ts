@@ -12,6 +12,6 @@ export class Store {
   }
 
   async write<T extends TObject>(key: string, value: T): Promise<unknown> {
-    return await this.cache.set(key, value, { ttl: Infinity });
+    return await this.cache.set(key, value, { ttl: 0 });
   }
 }

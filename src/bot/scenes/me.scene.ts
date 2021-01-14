@@ -17,6 +17,7 @@ export class InfoScene {
       undefined,
       2,
     )}</code>`;
+
     const buttons = [
       {
         callback_data: ACTIONS.Back,

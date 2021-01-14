@@ -1,29 +1,24 @@
 import { Module, Provider } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
-import SocksProxyAgent from 'socks-proxy-agent/dist/agent';
+import { Protector } from 'src/protector/protector';
 import { ProtectorModule } from 'src/protector/protector.module';
+import { StoriesQueueModule } from 'src/queue/stories/stories.queue.module';
+import { Store } from 'src/store/store';
 import { StoreModule } from 'src/store/store.module';
 import igConfiguration from './ig.configuration';
-import { IgAugumentedApiClient } from './ig.extensions';
+import { createAugumented, IgAugumentedApiClient } from './ig.extensions';
 import { IgService } from './ig.service';
-import { StoriesLoadModule } from './stories/load/stories-load.module';
 
 const igClientProvider: Provider = {
   provide: IgAugumentedApiClient,
-  useFactory: (config: ConfigType<typeof igConfiguration>) => {
-    const ig = new IgAugumentedApiClient({ ...config });
-    ig.state.generateDevice(config.seed);
-
-    if (config.proxy) {
-      ig.request.defaults.agent = new SocksProxyAgent({
-        host: config.proxy.hostname,
-        userId: config.proxy.username,
-        password: config.proxy.password,
-      });
-    }
-    return ig;
+  useFactory: async (
+    config: ConfigType<typeof igConfiguration>,
+    store: Store,
+    protector: Protector,
+  ) => {
+    return await createAugumented({ ...config }, store, protector);
   },
-  inject: [igConfiguration.KEY],
+  inject: [igConfiguration.KEY, Store, Protector],
 };
 
 @Module({
@@ -31,7 +26,7 @@ const igClientProvider: Provider = {
     ConfigModule.forFeature(igConfiguration),
     StoreModule,
     ProtectorModule,
-    StoriesLoadModule,
+    StoriesQueueModule,
   ],
   providers: [igClientProvider, IgService],
   exports: [IgService],

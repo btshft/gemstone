@@ -1,5 +1,20 @@
+import { Logger } from '@nestjs/common';
 import { IgApiClient } from 'instagram-private-api';
+import { SocksProxyAgent } from 'socks-proxy-agent';
+import { Protector } from 'src/protector/protector';
+import { Store } from 'src/store/store';
 import { TObject } from 'src/utils/utility.types';
+import { IgApiClientOptions } from './models/ig-api-client.options';
+import {
+  IgEncryptedInternalState,
+  IgInternalState,
+} from './models/ig-internal-state.model';
+
+interface IgCheckpointHook<T> {
+  name: string;
+  export: (client: IgAugumentedApiClient) => Promise<T> | T;
+  import: (data: T, client: IgAugumentedApiClient) => PromiseLike<void> | void;
+}
 
 class IgCheckpointService {
   private hooks: IgCheckpointHook<any>[] = [];
@@ -32,19 +47,6 @@ class IgCheckpointService {
   }
 }
 
-interface IgCheckpointHook<T> {
-  name: string;
-  export: (client: IgAugumentedApiClient) => Promise<T> | T;
-  import: (data: T, client: IgAugumentedApiClient) => PromiseLike<void> | void;
-}
-
-export type IgApiClientOptions = {
-  seed: string;
-  username: string;
-  password: string;
-  proxyUrl?: string;
-};
-
 export class IgAugumentedApiClient extends IgApiClient {
   public checkpoint: IgCheckpointService;
 
@@ -63,4 +65,53 @@ export class IgAugumentedApiClient extends IgApiClient {
       import: (data, client) => client.state.deserialize(data),
     });
   }
+}
+
+export async function createAugumented(
+  options: IgApiClientOptions,
+  store: Store,
+  protector: Protector,
+): Promise<IgAugumentedApiClient> {
+  const stateKey = 'ig:internal:state';
+  const logger = new Logger('ig:augumented');
+  const ig = new IgAugumentedApiClient(options);
+
+  ig.state.generateDevice(options.seed);
+
+  if (options.proxy) {
+    ig.request.defaults.agent = new SocksProxyAgent({
+      host: options.proxy.hostname,
+      userId: options.proxy.username,
+      password: options.proxy.password,
+    });
+  }
+
+  const encryptedState = await store.read<IgEncryptedInternalState>(stateKey);
+  if (encryptedState) {
+    const decryptedState = protector.unprotect<IgInternalState>(
+      encryptedState.value,
+    );
+
+    await ig.checkpoint.load(decryptedState);
+    logger.log({
+      message: 'Checkpoint loaded',
+      checkpoint: decryptedState,
+    });
+  }
+
+  ig.request.end$.subscribe(async () => {
+    try {
+      const checkpoint = await ig.checkpoint.commit();
+      await store.write<IgEncryptedInternalState>(stateKey, {
+        value: protector.protect(checkpoint),
+      });
+    } catch (err) {
+      logger.error({
+        message: 'Checkpoint commit failed',
+        error: err,
+      });
+    }
+  });
+
+  return ig;
 }

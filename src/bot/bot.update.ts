@@ -1,9 +1,9 @@
 import { UseFilters, UseGuards } from '@nestjs/common';
-import { Command, Ctx, Start, Update } from 'nestjs-telegraf';
+import { Ctx, Start, Update } from 'nestjs-telegraf';
 import { BotContext } from './bot.context';
-import { BotExceptionFilter } from './bot-exception.filter';
 import { START_SCENE } from './scenes/start.scene';
-import { BotAuthGuard } from './bot-auth.guard';
+import { BotAuthGuard } from './bot.auth.guard';
+import { BotExceptionFilter } from './bot.exception.filter';
 
 @Update()
 @UseFilters(BotExceptionFilter)

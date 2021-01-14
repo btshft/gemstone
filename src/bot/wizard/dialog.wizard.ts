@@ -1,10 +1,10 @@
-import { text } from 'express';
 import { reverse } from 'src/utils/helpers';
-import { Drop, TObject } from 'src/utils/utility.types';
+import { TObject } from 'src/utils/utility.types';
 import { Markup } from 'telegraf';
 import { MiddlewareFn } from 'telegraf/typings/composer';
 import { InlineKeyboardButton } from 'telegraf/typings/markup';
 import {
+  ExtraEditMessage,
   ExtraReplyMessage,
   InlineKeyboardMarkup,
   ReplyKeyboardMarkup,
@@ -13,20 +13,22 @@ import {
 import { BotContext } from '../bot.context';
 
 type DialogWizardState = {
-  dialog?: number;
+  dialog?: {
+    message: string;
+    handle: number;
+    markup: InlineKeyboardMarkup;
+  };
   scenes?: Array<string>;
 };
 
-type NavigateOptions<T extends TObject> = {
+type NavigateOptions = {
   fromDialog: boolean;
   silent: boolean;
-  state?: T;
 };
 
-type ReturnOptions<T extends TObject> = {
+type ReturnOptions = {
   fallback: string;
   silent: boolean;
-  state?: T;
 };
 
 type KeyboardMarkupRef = {
@@ -40,7 +42,7 @@ type DialogOptions = Omit<
   ExtraReplyMessage,
   keyof Pick<ExtraReplyMessage, 'reply_markup' | 'reply_to_message_id'>
 > & {
-  mode: 'update' | 'recreate';
+  recreate: boolean;
 };
 
 export function wizard(): MiddlewareFn<BotContext> {
@@ -55,12 +57,17 @@ export function wizard(): MiddlewareFn<BotContext> {
 export class DialogWizard {
   constructor(private context: BotContext) {}
 
+  async return(): Promise<void>;
+  async return<TState extends TObject>(state: TState): Promise<void>;
+  async return(options: Partial<ReturnOptions>): Promise<void>;
+
   async return<TState extends TObject>(
-    options?: Partial<ReturnOptions<TState>>,
+    state?: TState,
+    options?: Partial<ReturnOptions>,
   ): Promise<void> {
     const { scenes } = this.internalState();
     const [activeScene, previousScene] = reverse(scenes);
-    const { silent, state, fallback } = options || { silent: false };
+    const { silent, fallback } = options || { silent: false };
     const { scene } = this.context;
 
     if (!activeScene) {
@@ -74,14 +81,31 @@ export class DialogWizard {
       scenes: scenes,
     });
 
+    if (state && previousScene) {
+      this.state(state, previousScene);
+    }
+
     await scene.enter(previousScene || fallback, state, silent);
   }
 
+  async navigate(scene: string): Promise<void>;
+
   async navigate<TState extends TObject>(
     scene: string,
-    options?: Partial<NavigateOptions<TState>>,
+    state: TState,
+  ): Promise<void>;
+
+  async navigate(
+    scene: string,
+    options: Partial<NavigateOptions>,
+  ): Promise<void>;
+
+  async navigate<TState extends TObject>(
+    scene: string,
+    state?: TState,
+    options?: Partial<NavigateOptions>,
   ): Promise<void> {
-    const { fromDialog, silent, state } = options || {
+    const { fromDialog, silent } = options || {
       fromDialog: true,
       silent: false,
     };
@@ -99,14 +123,37 @@ export class DialogWizard {
       scenes: [...scenes, scene],
     });
 
+    if (state) {
+      this.state(state, scene);
+    }
+
     await this.context.scene.enter(scene, state, silent);
   }
+
+  async answer(text: string): Promise<void> {
+    try {
+      await this.context.answerCbQuery(text);
+    } catch {}
+  }
+
+  async ui(): Promise<void>;
 
   async ui(
     message: string,
     markup: KeyboardMarkupRef | InlineKeyboardMarkup | InlineKeyboardButton[],
+  ): Promise<void>;
+
+  async ui(
+    message: string,
+    markup: KeyboardMarkupRef | InlineKeyboardMarkup | InlineKeyboardButton[],
+    options: Partial<DialogOptions>,
+  ): Promise<void>;
+
+  async ui(
+    message?: string,
+    markup?: KeyboardMarkupRef | InlineKeyboardMarkup | InlineKeyboardButton[],
     options?: Partial<DialogOptions>,
-  ): Promise<number> {
+  ): Promise<void> {
     const resolveMarkup = (): InlineKeyboardMarkup => {
       return 'inline_keyboard' in markup
         ? <InlineKeyboardMarkup>markup
@@ -115,77 +162,109 @@ export class DialogWizard {
         : Markup.inlineKeyboard(markup);
     };
 
-    const createUi = async (): Promise<number> => {
-      const { message_id } = await this.context.reply(message, {
-        disable_notification: true,
-        disable_web_page_preview: true,
-        reply_markup: resolveMarkup(),
-        ...options,
-      });
-
-      if (message_id) {
-        this.internalState({
-          dialog: message_id,
-        });
-      }
-
-      return message_id;
-    };
-
-    const updateUi = async (dialog: number): Promise<void> => {
-      await this.context.telegram.editMessageText(
-        this.context.chat.id,
-        dialog,
-        undefined,
-        message,
-        {
-          disable_notification: true,
-          disable_web_page_preview: true,
-          reply_markup: resolveMarkup(),
-          ...options,
-        },
-      );
-    };
-
-    const deleteUi = async (dialog: number): Promise<boolean> => {
-      try {
-        return await this.context.deleteMessage(dialog);
-      } catch {
-        return false;
-      }
-    };
-
     const webhookReply = this.context.telegram.webhookReply;
     const { dialog } = this.internalState();
-    const { mode } = options || { mode: 'update' };
+    const redraw = arguments.length === 0;
 
     this.context.telegram.webhookReply = false;
     try {
-      if (dialog) {
-        // Refesh currenly active UI
-        if (mode === 'update') {
-          try {
-            await updateUi(dialog);
-          } catch {
-            await deleteUi(dialog);
-            return await createUi();
-          }
-          // Delete prev UI and draw a new one
-        } else {
-          await deleteUi(dialog);
-          return createUi();
-        }
+      // Redraw current UI from scratch
+      if (redraw) {
+        if (!dialog) throw new Error('Nothing to redraw');
+        await this.deleteUi(dialog.handle);
+        await this.createUi(dialog.message, dialog.markup, {
+          disable_notification: true,
+        });
       } else {
-        return await createUi();
+        if (dialog) {
+          const { recreate } = options || { recreate: false };
+          if (!recreate) {
+            // eslint-disable-next-line prettier/prettier
+            await this.updateUi(dialog.handle, message, resolveMarkup(), options);
+          } else {
+            await this.deleteUi(dialog.handle);
+            await this.createUi(message, resolveMarkup(), options);
+          }
+        } else {
+          await this.createUi(message, resolveMarkup(), options);
+        }
       }
     } finally {
       this.context.telegram.webhookReply = webhookReply;
     }
   }
 
-  state<T extends TObject>(update?: Partial<TObject>): T {
-    const key = `__wizard_chat_state_${this.context.chat.id}`;
+  private async createUi(
+    message: string,
+    markup: InlineKeyboardMarkup,
+    options: Partial<DialogOptions>,
+  ): Promise<number> {
+    const { message_id } = await this.context.reply(message, {
+      disable_notification: true,
+      disable_web_page_preview: true,
+      reply_markup: markup,
+      ...options,
+    });
+
+    this.internalState({
+      dialog: {
+        handle: message_id,
+        markup: markup,
+        message: message,
+      },
+    });
+
+    return message_id;
+  }
+
+  private async updateUi(
+    handle: number,
+    message: string,
+    markup: InlineKeyboardMarkup,
+    options: Partial<DialogOptions>,
+  ): Promise<number> {
+    const extra: ExtraEditMessage = {
+      disable_notification: true,
+      disable_web_page_preview: true,
+      reply_markup: markup,
+      ...options,
+    };
+
+    await this.context.telegram.editMessageText(
+      this.context.chat.id,
+      handle,
+      undefined,
+      message,
+      extra,
+    );
+
+    this.internalState({
+      dialog: {
+        handle: handle,
+        markup: markup,
+        message: message,
+      },
+    });
+
+    return handle;
+  }
+
+  private async deleteUi(handle: number): Promise<void> {
+    await this.context.deleteMessage(handle);
+    this.internalState({
+      dialog: null,
+    });
+  }
+
+  state<T extends TObject>(update?: Partial<T>, scene?: string): T {
+    const { scenes } = this.internalState();
+    const [, activeScene] = scenes;
+    const key = `__wizard_chat_state_${this.context.chat.id}__${
+      scene || activeScene
+    }`;
+
     const state = this.context.session[key] || {};
+
     if (update) {
       this.context.session[key] = {
         ...state,

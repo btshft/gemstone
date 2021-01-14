@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { TelegrafModule } from 'nestjs-telegraf';
-import { StoriesLoadModule } from 'src/ig/stories/load/stories-load.module';
 import { session } from 'telegraf';
 import botConfiguration from './bot.configuration';
 import { BotUpdate } from './bot.update';
@@ -11,7 +10,6 @@ import { wizard } from './wizard/dialog.wizard';
 @Module({
   imports: [
     ScenesModule,
-    StoriesLoadModule,
     ConfigModule.forFeature(botConfiguration),
     TelegrafModule.forRootAsync({
       inject: [botConfiguration.KEY],

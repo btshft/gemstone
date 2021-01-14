@@ -1,9 +1,12 @@
+import { UseFilters } from '@nestjs/common';
+import { throws } from 'assert';
 import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Markup } from 'telegraf';
 import { BotContext } from '../bot.context';
+import { BotExceptionFilter } from '../bot.exception.filter';
 import { ADMINISTRATION_SCENE } from './administration/administration.scene';
 import { ME_SCENE } from './me.scene';
-import { STORIES_SCENE } from './stories.scene';
+import { STORIES_SCENE } from './stories/stories.scene';
 
 export const START_SCENE = 'START_SCENE';
 
@@ -14,6 +17,7 @@ const ACTIONS = {
 };
 
 @Scene(START_SCENE)
+@UseFilters(BotExceptionFilter)
 export class StartScene {
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<any> {
@@ -24,8 +28,6 @@ export class StartScene {
       Markup.callbackButton('Stories', ACTIONS.Stories),
       Markup.callbackButton('Me', ACTIONS.Me),
     ];
-
-    await dialog.ui(message, buttons);
   }
 
   @Action(ACTIONS.Administration)
