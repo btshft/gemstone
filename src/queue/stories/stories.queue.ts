@@ -1,58 +1,44 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { BackoffOptions, Queue } from 'bull';
-import { STORIES_QUEUE } from './stories.queue.constants';
-import { StoriesRequest } from './stories.queue.request';
-import { StoriesTask } from './stories.task';
+import { TaskStore } from 'src/tasks/task.store';
+import {
+  STORIES_QUEUE,
+  STORIES_QUEUE_REPROCESS_ATTEMPTS,
+  STORIES_QUEUE_REPROCESS_DELAY_MS,
+} from './stories.queue.constants';
+import { LoadStoriesRequest, StoriesTask } from './stories.queue.types';
 
 @Injectable()
 export class StoriesQueue {
-  private readonly taskStore: Map<
-    string,
-    Record<string, StoriesTask<StoriesRequest>>
-  > = new Map();
+  constructor(
+    @InjectQueue(STORIES_QUEUE) private queue: Queue,
+    private tasks: TaskStore,
+  ) {}
 
-  constructor(@InjectQueue(STORIES_QUEUE) private queue: Queue) {}
-
-  async request(request: StoriesRequest): Promise<void> {
+  // eslint-disable-next-line prettier/prettier
+  async request(request: LoadStoriesRequest): Promise<StoriesTask<'stories:request'>> {
     const job = await this.queue.add(request, {
       removeOnComplete: true,
       removeOnFail: true,
-      attempts: 5,
+      attempts: STORIES_QUEUE_REPROCESS_ATTEMPTS,
       backoff: <BackoffOptions>{
         type: 'exponential',
-        delay: 60000,
+        delay: STORIES_QUEUE_REPROCESS_DELAY_MS,
       },
     });
 
-    const key = `${request.tg.chatId}:${request.tg.userId}`;
-    const tasks = this.taskStore.get(key) || {};
-    const task = new StoriesTask<StoriesRequest>({
-      jobId: job.id,
-      name: `Load @${request.ig.username} stories`,
-      request: request,
+    return this.tasks.create<StoriesTask<'stories:request'>>({
+      key: String(job.id),
+      status: 'created',
+      region: `${request.tg.chatId}:${request.tg.userId}`,
+      text: `Loading '${request.ig.username}' stories`,
+      extension: {
+        request: request,
+        job: {
+          id: job.id,
+        },
+      },
     });
-
-    tasks[job.id] = task;
-
-    this.taskStore.set(key, tasks);
-  }
-
-  tasks(chatId: number, userId: number): StoriesTask<StoriesRequest>[] {
-    const key = `${chatId}:${userId}`;
-    const tasks = this.taskStore.get(key);
-    if (!tasks) {
-      return [];
-    }
-
-    return Object.entries(tasks).map(([, v]) => v);
-  }
-
-  complete(chatId: number, userId: number, jobId: number | string) {
-    const key = `${chatId}:${userId}`;
-    const tasks = this.taskStore.get(key);
-    if (tasks && jobId in tasks) {
-      delete tasks[jobId];
-    }
   }
 }

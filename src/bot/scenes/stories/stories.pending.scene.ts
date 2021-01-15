@@ -1,6 +1,6 @@
 import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
 import { BotContext } from 'src/bot/bot.context';
-import { StoriesQueue } from 'src/queue/stories/stories.queue';
+import { TaskStore } from 'src/tasks/task.store';
 import { Markup } from 'telegraf';
 
 export const STORIES_PENDING_SCENE = 'STORIES_PENDING_SCENE';
@@ -11,12 +11,14 @@ const ACTIONS = {
 
 @Scene(STORIES_PENDING_SCENE)
 export class StoriesPendingScene {
-  constructor(private queue: StoriesQueue) {}
+  constructor(private tasks: TaskStore) {}
 
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
     const { dialog } = ctx;
-    const tasks = this.queue.tasks(ctx.chat.id, ctx.from.id);
+    const region = `${ctx.chat.id}:${ctx.from.id}`;
+    const tasks = this.tasks.many(region);
+
     if (!tasks || !tasks.length) {
       await dialog.ui('No pending tasks', [
         Markup.callbackButton('Back', ACTIONS.Back),
@@ -24,7 +26,7 @@ export class StoriesPendingScene {
       return;
     } else {
       const message = tasks.reduceRight((msg, task, idx) => {
-        const row = `${idx + 1}. ${task.name}`;
+        const row = `${idx + 1}. ${task.text} (status: ${task.status})`;
         return msg ? `${msg}\n${row}` : row;
       }, '');
 

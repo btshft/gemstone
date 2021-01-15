@@ -1,5 +1,4 @@
 import { UseFilters } from '@nestjs/common';
-import { throws } from 'assert';
 import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Markup } from 'telegraf';
 import { BotContext } from '../bot.context';
@@ -28,6 +27,8 @@ export class StartScene {
       Markup.callbackButton('Stories', ACTIONS.Stories),
       Markup.callbackButton('Me', ACTIONS.Me),
     ];
+
+    await dialog.ui(message, buttons);
   }
 
   @Action(ACTIONS.Administration)
