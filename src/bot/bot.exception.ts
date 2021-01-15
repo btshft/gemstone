@@ -16,7 +16,8 @@ type Failure<
 > = {
   type: TType;
   // eslint-disable-next-line prettier/prettier
-} & TDetails & FailureBase;
+} & TDetails &
+  FailureBase;
 
 export type UnknownFailure = Failure<'unknown'>;
 export type Unauthorized = Failure<
@@ -39,7 +40,9 @@ export class BotException<
     failure: Optional<Drop<Unauthorized, 'type'>, 'message'>,
   ): BotException<Unauthorized> {
     // eslint-disable-next-line prettier/prettier
-    const message = failure.message || `unauthorized request from user ${failure.from.username}`;
+    const message =
+      failure.message ||
+      `unauthorized request from user ${failure.from.username}`;
 
     return new BotException<Unauthorized>({
       type: 'unauthorized',

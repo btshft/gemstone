@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { IgModule } from 'src/ig/ig.module';
 import { StoriesQueueModule } from 'src/queue/stories/stories.queue.module';
 import botConfiguration from '../bot.configuration';
+import { AdministrationChallengeScene } from './administration/administration.challenge.scene';
 import { AdministrationScene } from './administration/administration.scene';
 import { AdministrationStateScene } from './administration/administration.state.scene';
 import { ErrorScene } from './error.scene';
@@ -22,6 +23,7 @@ import { StoriesScene } from './stories/stories.scene';
     StartScene,
     AdministrationScene,
     AdministrationStateScene,
+    AdministrationChallengeScene,
     ErrorScene,
     InfoScene,
     StoriesScene,

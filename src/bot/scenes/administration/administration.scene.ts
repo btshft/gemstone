@@ -2,7 +2,7 @@ import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
 import { BotContext } from 'src/bot/bot.context';
 import { IgService } from 'src/ig/ig.service';
 import { Markup } from 'telegraf';
-import { START_SCENE } from '../start.scene';
+import { ADMINISTRATION_CHALLENGE_SCENE } from './administration.challenge.scene';
 import { ADMINISTRATION_STATE_SCENE } from './administration.state.scene';
 
 export const ADMINISTRATION_SCENE = 'ADMINISTRATION_SCENE';
@@ -42,7 +42,13 @@ export class AdministrationScene {
   async login(@Ctx() ctx: BotContext): Promise<void> {
     const { dialog } = ctx;
     const status = await this.ig.authenticate();
-    await dialog.answer(`login: ${status}`);
+    await dialog.answer(`Login ${status}`);
+  }
+
+  @Action(ACTIONS.Challenge)
+  async challenge(@Ctx() ctx: BotContext): Promise<void> {
+    const { dialog } = ctx;
+    await dialog.navigate(ADMINISTRATION_CHALLENGE_SCENE);
   }
 
   @Action(ACTIONS.State)

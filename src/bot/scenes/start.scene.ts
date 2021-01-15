@@ -28,6 +28,8 @@ export class StartScene {
       Markup.callbackButton('Stories', ACTIONS.Stories),
       Markup.callbackButton('Me', ACTIONS.Me),
     ];
+
+    await dialog.ui(message, buttons);
   }
 
   @Action(ACTIONS.Administration)

@@ -180,7 +180,12 @@ export class DialogWizard {
           const { recreate } = options || { recreate: false };
           if (!recreate) {
             // eslint-disable-next-line prettier/prettier
-            await this.updateUi(dialog.handle, message, resolveMarkup(), options);
+            await this.updateUi(
+              dialog.handle,
+              message,
+              resolveMarkup(),
+              options,
+            );
           } else {
             await this.deleteUi(dialog.handle);
             await this.createUi(message, resolveMarkup(), options);

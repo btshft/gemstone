@@ -25,6 +25,43 @@ export class IgService {
     }
   }
 
+  async startChallenge(): Promise<boolean> {
+    try {
+      this.logger.log({
+        message: 'Challenge start',
+        checkpoint: this.ig.state.checkpoint || '<null>',
+      });
+
+      await this.ig.challenge.auto(true);
+    } catch (err) {
+      this.logger.error({
+        message: 'Unable to start challenge',
+        err: err.message || err,
+      });
+
+      return false;
+    }
+  }
+
+  async completeChallenge(code: string): Promise<boolean> {
+    try {
+      await this.ig.challenge.sendSecurityCode(code);
+      this.logger.log({
+        message: 'Challenge complete',
+        checkpoint: this.ig.state.checkpoint || '<null>',
+      });
+
+      return true;
+    } catch (err) {
+      this.logger.error({
+        message: 'Unable to complete challenge',
+        err: err.message || err,
+      });
+
+      return false;
+    }
+  }
+
   async authenticate(): Promise<IgAuthStatus> {
     const updateState = async (
       status: IgAuthStatus | IgState,
