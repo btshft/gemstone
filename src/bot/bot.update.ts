@@ -9,7 +9,7 @@ import { BotExceptionFilter } from './bot.exception.filter';
 @UseFilters(BotExceptionFilter)
 export class BotUpdate {
   @Start()
-  @UseGuards(BotAuthGuard)
+  //@UseGuards(BotAuthGuard)
   async start(@Ctx() ctx: BotContext): Promise<void> {
     const { dialog } = ctx;
     await dialog.navigate(START_SCENE, {

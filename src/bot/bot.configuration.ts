@@ -19,9 +19,7 @@ export default registerAs('bot', () => ({
     enabled: !!process.env.WEBHOOK_ENABLE,
     domain: process.env.WEBHOOK_DOMAIN,
     path: process.env.WEBHOOK_PATH,
-    port: process.env.WEBHOOK_PORT
-      ? parseInt(process.env.WEBHOOK_PORT)
-      : undefined,
+    port: process.env.WEBHOOK_PORT ? parseInt(process.env.WEBHOOK_PORT) : 8085,
   },
   token: process.env.BOT_TOKEN,
 }));

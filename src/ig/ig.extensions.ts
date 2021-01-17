@@ -61,8 +61,7 @@ export class IgAugumentedApiClient extends IgApiClient {
     this.checkpoint.hook({
       name: 'client',
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, prettier/prettier
-      export: async (client) =>
-        await client.state.serialize().then(({ constants, ...state }) => state),
+      export: async (client) => await client.state.serialize().then(({ constants, ...state }) => state),
       import: (data, client) => client.state.deserialize(data),
     });
   }

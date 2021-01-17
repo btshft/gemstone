@@ -1,6 +1,8 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ActionsModule } from './actions/actions.module';
 import appConfiguration from './app.configuration';
 import botConfiguration from './bot/bot.configuration';
 import { BotModule } from './bot/bot.module';
@@ -25,11 +27,13 @@ import { StoreModule } from './store/store.module';
       }),
       inject: [appConfiguration.KEY],
     }),
+    ScheduleModule.forRoot(),
     BotModule,
-    HealthModule,
     IgModule,
     StoreModule,
     ProtectorModule,
+    HealthModule,
+    ActionsModule,
   ],
   controllers: [],
   providers: [],

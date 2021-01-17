@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IgCheckpointError } from 'instagram-private-api';
+import {
+  IgCheckpointError,
+  ReelsMediaFeedResponseItem,
+} from 'instagram-private-api';
 import { merge } from 'lodash';
+import { Observable } from 'rxjs';
 import { Store } from 'src/store/store';
 import { utc } from 'src/utils/date-time';
 import { DeepPartial } from 'src/utils/utility.types';
@@ -60,6 +64,14 @@ export class IgService {
 
       return false;
     }
+  }
+
+  stories$(userId: string | number): Observable<ReelsMediaFeedResponseItem[]> {
+    const feed = this.ig.feed.reelsMedia({
+      userIds: [userId],
+    });
+
+    return feed.observable();
   }
 
   async authenticate(): Promise<IgAuthStatus> {

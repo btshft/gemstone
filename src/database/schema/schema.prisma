@@ -1,0 +1,50 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum RoleName {
+  User
+  Administrator
+}
+
+model Role {
+  id String @id @default(uuid())
+  name RoleName @default(User)
+  users User[]
+}
+
+model User {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  telegram TelegramUser?
+  roles Role[]
+  notifications Notification[]
+}
+
+model Notification {
+  id String @id @default(cuid())
+  text String
+  seen Boolean @default(false)
+  metadata Json?
+  createdAt DateTime @default(now())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+}
+
+model TelegramUser {
+  id Int @id
+  username String?
+  userId String
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Outbox {
+  id String @id @default(cuid())
+  metadata Json?
+  content Json
+}

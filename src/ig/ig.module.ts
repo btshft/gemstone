@@ -2,7 +2,6 @@ import { Module, Provider } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { Protector } from 'src/protector/protector';
 import { ProtectorModule } from 'src/protector/protector.module';
-import { StoriesQueueModule } from 'src/queue/stories/stories.queue.module';
 import { Store } from 'src/store/store';
 import { StoreModule } from 'src/store/store.module';
 import igConfiguration from './ig.configuration';
@@ -26,7 +25,6 @@ const igClientProvider: Provider = {
     ConfigModule.forFeature(igConfiguration),
     StoreModule,
     ProtectorModule,
-    StoriesQueueModule,
   ],
   providers: [igClientProvider, IgService],
   exports: [IgService],
