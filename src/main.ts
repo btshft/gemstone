@@ -15,6 +15,8 @@ async function bootstrap() {
     new FastifyAdapter({ logger: true }),
   );
 
+  app.setGlobalPrefix('api');
+
   const configService = app.get<ConfigService>(ConfigService);
   const { enabled, path } = configService.get('bot.webhook');
   const { port } = configService.get('app');
@@ -22,12 +24,15 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Gemstone')
     .setVersion('1.0')
-    .addApiKey({
-      type: 'apiKey',
-      in: 'header',
-      name: 'X-Api-Key',
-      description: 'API Key',
-    })
+    .addApiKey(
+      {
+        type: 'apiKey',
+        in: 'header',
+        name: 'X-Api-Key',
+        description: 'API Key',
+      },
+      'X-Api-Key',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -38,7 +43,7 @@ async function bootstrap() {
     app.use(bot.webhookCallback(path));
   }
 
-  app.setGlobalPrefix('api').listen(port, '0.0.0.0');
+  app.listen(port, '0.0.0.0');
 }
 
 bootstrap();

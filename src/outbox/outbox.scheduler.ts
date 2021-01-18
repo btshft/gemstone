@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from 'src/database/services/prisma';
+import { ResourceLock } from 'src/utils/resource-locker';
 import { OutboxProcessorResolver } from './outbox.processors';
 import { OutboxUnknown } from './outbox.types';
 
 @Injectable()
 export class OutboxScheduler {
+  private readonly locker = new ResourceLock();
   private readonly logger = new Logger('Outbox');
 
   constructor(
@@ -13,7 +15,7 @@ export class OutboxScheduler {
     private resolve: OutboxProcessorResolver,
   ) {}
 
-  @Cron('*/5 * * * * *')
+  @Cron('*/10 * * * * *')
   async process(): Promise<void> {
     try {
       const outboxes = await this.prisma.outbox.findMany({
@@ -25,7 +27,23 @@ export class OutboxScheduler {
       });
 
       for (const outbox of outboxes) {
+        const lock = await this.locker.acquire(outbox.id);
+
         try {
+          const existing = await this.prisma.outbox.findUnique({
+            where: {
+              id: outbox.id,
+            },
+            select: {
+              id: true,
+            },
+          });
+
+          if (!existing) {
+            // Skip because someone already processed outbox
+            continue;
+          }
+
           const unknown = <OutboxUnknown>outbox.content;
           const handler = this.resolve.resolve(unknown.type);
 
@@ -40,6 +58,8 @@ export class OutboxScheduler {
             message: `Failed to process outbox '${outbox.id}'`,
             reason: err.message || err,
           });
+        } finally {
+          await lock.release();
         }
       }
     } catch (err) {

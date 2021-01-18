@@ -1,10 +1,11 @@
-import { Action } from 'src/actions/actions.types';
+import { SagaTypes } from 'src/sagas/saga.types';
 
 type Empty = Record<string, any>;
 type Outboxes = {
-  ['outbox:action']: {
+  ['outbox:saga']: {
     value: {
-      action: Action<any>;
+      sagaId: string;
+      sagaType: SagaTypes;
     };
     metadata: Empty;
   };

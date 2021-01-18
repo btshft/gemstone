@@ -21,30 +21,35 @@ model Role {
 model User {
   id String @id @default(cuid())
   createdAt DateTime @default(now())
-  telegram TelegramUser?
+  telegramUserId String @unique
+  telegramUsername String?
   roles Role[]
-  notifications Notification[]
+  token RegistrationToken?
 }
 
-model Notification {
-  id String @id @default(cuid())
-  text String
-  seen Boolean @default(false)
-  metadata Json?
-  createdAt DateTime @default(now())
-  userId String
-  user User @relation(fields: [userId], references: [id])
-}
-
-model TelegramUser {
-  id Int @id
-  username String?
-  userId String
-  user User @relation(fields: [userId], references: [id])
+model RegistrationToken {
+  id String @id @default(uuid())
+  value String @unique
+  userId String?
+  expiration DateTime?
+  roles RoleName[]
+  user User? @relation(fields: [userId], references: [id])
 }
 
 model Outbox {
   id String @id @default(cuid())
   metadata Json?
   content Json
+}
+
+model Saga {
+  id String @id @default(uuid())
+  type String
+  state String
+  metadata Json?
+  transitionAt DateTime?
+  createdAt DateTime @default(now())
+  faultedAt DateTime? 
+  fault String?
+  completedAt DateTime?
 }

@@ -5,19 +5,27 @@ import { session } from 'telegraf';
 import botConfiguration from './bot.configuration';
 import { BotUpdate } from './bot.update';
 import { ScenesModule } from './scenes/scenes.module';
-import { wizard } from './wizard/dialog.wizard';
+import { wizard } from './dialog-wizard/dialog.wizard';
+import { appContext } from './app-context/app.context';
+import { PrismaModule } from 'src/database/services/prisma.module';
+import { Prisma } from 'src/database/services/prisma';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
+    UserModule,
     ScenesModule,
     ConfigModule.forFeature(botConfiguration),
     TelegrafModule.forRootAsync({
-      inject: [botConfiguration.KEY],
-      imports: [ConfigModule.forFeature(botConfiguration)],
-      useFactory: async (config: ConfigType<typeof botConfiguration>) => {
+      inject: [botConfiguration.KEY, Prisma],
+      imports: [ConfigModule.forFeature(botConfiguration), PrismaModule],
+      useFactory: async (
+        config: ConfigType<typeof botConfiguration>,
+        prisma: Prisma,
+      ) => {
         return {
           token: config.token,
-          middlewares: [session(), wizard()],
+          middlewares: [session(), wizard(), appContext(prisma)],
           launchOptions: {
             webhook: config.webhook.enabled
               ? {

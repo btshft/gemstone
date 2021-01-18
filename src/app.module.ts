@@ -2,13 +2,13 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ActionsModule } from './actions/actions.module';
 import appConfiguration from './app.configuration';
 import botConfiguration from './bot/bot.configuration';
 import { BotModule } from './bot/bot.module';
 import { HealthModule } from './health/health.module';
 import { IgModule } from './ig/ig.module';
 import { ProtectorModule } from './protector/protector.module';
+import { SagaModule } from './sagas/saga.module';
 import { StoreModule } from './store/store.module';
 
 @Module({
@@ -33,7 +33,7 @@ import { StoreModule } from './store/store.module';
     StoreModule,
     ProtectorModule,
     HealthModule,
-    ActionsModule,
+    SagaModule,
   ],
   controllers: [],
   providers: [],

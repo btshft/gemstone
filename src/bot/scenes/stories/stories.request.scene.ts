@@ -7,9 +7,10 @@ import {
   SceneEnter,
   SceneLeave,
 } from 'nestjs-telegraf';
-import { ActionsClient } from 'src/actions/api/actions.api.client';
 import { BotContext } from 'src/bot/bot.context';
 import { IgService } from 'src/ig/ig.service';
+import { SagaClient } from 'src/sagas/api/sagas.api.client';
+import { StoriesSagaGetJson } from 'src/sagas/saga.types';
 import { Markup } from 'telegraf';
 import { START_SCENE } from '../start.scene';
 
@@ -21,6 +22,7 @@ const ACTIONS = {
 };
 
 type RequestStories = {
+  userId: string;
   tg: {
     from: number | string;
     chat: number | string;
@@ -33,7 +35,7 @@ type RequestStories = {
 
 @Scene(STORIES_REQUEST_SCENE)
 export class StoriesRequestScene {
-  constructor(private ig: IgService, private actions: ActionsClient) {}
+  constructor(private ig: IgService, private sagaClient: SagaClient) {}
 
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
@@ -62,6 +64,7 @@ export class StoriesRequestScene {
     }
 
     await this.requestStories({
+      userId: ctx.app.user.id,
       ig: {
         id: userId,
         usename: username,
@@ -96,20 +99,15 @@ export class StoriesRequestScene {
   }
 
   async requestStories(request: RequestStories): Promise<void> {
-    await this.actions.action({
-      payload: {
-        chat: {
-          id: request.tg.chat,
-        },
-        from: {
-          id: request.tg.from,
-        },
-        ig: {
-          userId: request.ig.id,
-          username: request.ig.usename,
-        },
+    await this.sagaClient.create<StoriesSagaGetJson>({
+      metadata: {
+        igUserId: request.ig.id,
+        tgChatId: request.tg.chat,
+        igUsername: request.ig.usename,
+        userId: request.userId,
       },
-      type: 'action:request-stories',
+      state: 'ig:get-json',
+      type: 'saga:stories:request',
     });
   }
 }

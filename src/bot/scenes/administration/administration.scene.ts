@@ -1,6 +1,7 @@
 import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
 import { BotContext } from 'src/bot/bot.context';
 import { IgService } from 'src/ig/ig.service';
+import { UserService } from 'src/user/user.service';
 import { Markup } from 'telegraf';
 import { ADMINISTRATION_CHALLENGE_SCENE } from './administration.challenge.scene';
 import { ADMINISTRATION_STATE_SCENE } from './administration.state.scene';
@@ -11,12 +12,13 @@ const ACTIONS = {
   Login: 'action:administration:login',
   Challenge: 'action:administration:challenge',
   State: 'action:administration:state',
+  IssueToken: 'action:administration:issue-token',
   Back: 'action:administration:back',
 };
 
 @Scene(ADMINISTRATION_SCENE)
 export class AdministrationScene {
-  constructor(private ig: IgService) {}
+  constructor(private ig: IgService, private userService: UserService) {}
 
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
@@ -26,6 +28,7 @@ export class AdministrationScene {
       Markup.callbackButton('Login', ACTIONS.Login),
       Markup.callbackButton('Challenge', ACTIONS.Challenge),
       Markup.callbackButton('State', ACTIONS.State),
+      Markup.callbackButton('Issue token', ACTIONS.IssueToken),
       Markup.callbackButton('Back', ACTIONS.Back),
     ];
 
@@ -55,5 +58,16 @@ export class AdministrationScene {
   async state(@Ctx() ctx: BotContext): Promise<void> {
     const { dialog } = ctx;
     await dialog.navigate(ADMINISTRATION_STATE_SCENE);
+  }
+
+  @Action(ACTIONS.IssueToken)
+  async issueToken(@Ctx() ctx: BotContext): Promise<void> {
+    const { dialog } = ctx;
+    const token = await this.userService.issueRegistrationToken(['User']);
+
+    await ctx.replyWithHTML(
+      `Token: <code>${token}</code>\nLink: <a href="">https://t.me/${ctx.me}?start=${token}</a>`,
+    );
+    await dialog.ui();
   }
 }

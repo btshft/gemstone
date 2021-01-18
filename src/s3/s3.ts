@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { Client } from 'minio';
 import { TObject } from 'src/utils/utility.types';
 import { Readable } from 'stream';
-import { S3Configuration } from './s3.configuration';
+import s3Configuration from './s3.configuration';
 
 type S3Stream = Buffer | Readable | string;
 
@@ -18,12 +19,17 @@ export class S3 {
   private readonly minio: Client;
   private bucketRefs: string[] = [];
 
-  constructor(options: S3Configuration) {
+  constructor(
+    @Inject(s3Configuration.KEY)
+    private config: ConfigType<typeof s3Configuration>,
+    private http: HttpService,
+  ) {
     this.minio = new Client({
-      accessKey: options.accessKey,
-      endPoint: options.endpoint,
-      secretKey: options.secretKey,
-      useSSL: true,
+      accessKey: this.config.accessKey,
+      endPoint: this.config.endpoint,
+      secretKey: this.config.secretKey,
+      port: this.config.port,
+      useSSL: this.config.ssl,
     });
   }
 
@@ -37,12 +43,16 @@ export class S3 {
       this.bucketRefs = [bucket, ...this.bucketRefs];
     }
 
-    return new S3Bucket(this.minio, bucket);
+    return new S3Bucket(this.minio, this.http, bucket);
   }
 }
 
 class S3Bucket {
-  constructor(private minio: Client, private bucket: string) {}
+  constructor(
+    private minio: Client,
+    private http: HttpService,
+    private bucket: string,
+  ) {}
 
   async put<TMeta extends TObject>(
     key: string,
@@ -50,6 +60,20 @@ class S3Bucket {
     metadata?: TMeta,
   ): Promise<string> {
     return await this.minio.putObject(this.bucket, key, data, metadata);
+  }
+
+  async upload<TMeta extends TObject>(
+    url: string,
+    key: string,
+    metadata?: TMeta,
+  ): Promise<void> {
+    const response = await this.http.axiosRef.request({
+      url: url,
+      method: 'GET',
+      responseType: 'stream',
+    });
+
+    await this.put(key, response.data, metadata);
   }
 
   async get(key: string): Promise<Readable> {

@@ -1,9 +1,9 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { PrismaModule } from 'src/database/services/prisma.module';
-import { ActionsModule } from 'src/actions/actions.module';
+import { SagaModule } from 'src/sagas/saga.module';
 import {
   OutboxProcessorResolver,
-  OutboxTaskProcessor,
+  OutboxSagaProcessor,
 } from './outbox.processors';
 import { OutboxScheduler } from './outbox.scheduler';
 import { OutboxWriter } from './outbox.writer';
@@ -13,9 +13,9 @@ import { OutboxWriter } from './outbox.writer';
     OutboxScheduler,
     OutboxWriter,
     OutboxProcessorResolver,
-    OutboxTaskProcessor,
+    OutboxSagaProcessor,
   ],
-  imports: [forwardRef(() => ActionsModule), PrismaModule],
+  imports: [PrismaModule, forwardRef(() => SagaModule)],
   exports: [OutboxWriter],
 })
 export class OutboxModule {}

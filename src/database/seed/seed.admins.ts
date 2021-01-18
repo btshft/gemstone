@@ -17,8 +17,8 @@ const runner: ISeedRunner = {
     });
 
     for (const id of admins) {
-      const existing = await client.telegramUser.findFirst({
-        where: { id: id },
+      const existing = await client.user.findUnique({
+        where: { telegramUserId: String(id) },
       });
 
       if (existing) {
@@ -31,17 +31,11 @@ const runner: ISeedRunner = {
 
       await client.user.create({
         data: {
+          telegramUserId: String(id),
+          telegramUsername: '<unknown>',
           roles: {
-            connect: [
-              {
-                id: role.id,
-              },
-            ],
-          },
-          telegram: {
-            create: {
-              id: id,
-              username: '<unknown>',
+            connect: {
+              id: role.id,
             },
           },
         },

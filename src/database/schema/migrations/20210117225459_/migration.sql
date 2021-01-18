@@ -13,6 +13,19 @@ CREATE TABLE "Role" (
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "telegramUserId" TEXT NOT NULL,
+    "telegramUsername" TEXT,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RegistrationToken" (
+    "id" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "userId" TEXT,
+    "expiration" TIMESTAMP(3),
+    "roles" "RoleName"[],
 
     PRIMARY KEY ("id")
 );
@@ -22,16 +35,8 @@ CREATE TABLE "Notification" (
     "id" TEXT NOT NULL,
     "text" TEXT NOT NULL,
     "seen" BOOLEAN NOT NULL DEFAULT false,
+    "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" TEXT NOT NULL,
-
-    PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "TelegramUser" (
-    "id" INTEGER NOT NULL,
-    "username" TEXT,
     "userId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
@@ -47,13 +52,34 @@ CREATE TABLE "Outbox" (
 );
 
 -- CreateTable
+CREATE TABLE "Saga" (
+    "id" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
+    "metadata" JSONB,
+    "transitionAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "faultedAt" TIMESTAMP(3),
+    "fault" TEXT,
+    "completedAt" TIMESTAMP(3),
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_RoleToUser" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TelegramUser_userId_unique" ON "TelegramUser"("userId");
+CREATE UNIQUE INDEX "User.telegramUserId_unique" ON "User"("telegramUserId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RegistrationToken.value_unique" ON "RegistrationToken"("value");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RegistrationToken_userId_unique" ON "RegistrationToken"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_RoleToUser_AB_unique" ON "_RoleToUser"("A", "B");
@@ -62,10 +88,10 @@ CREATE UNIQUE INDEX "_RoleToUser_AB_unique" ON "_RoleToUser"("A", "B");
 CREATE INDEX "_RoleToUser_B_index" ON "_RoleToUser"("B");
 
 -- AddForeignKey
-ALTER TABLE "Notification" ADD FOREIGN KEY("userId")REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "RegistrationToken" ADD FOREIGN KEY("userId")REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TelegramUser" ADD FOREIGN KEY("userId")REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Notification" ADD FOREIGN KEY("userId")REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_RoleToUser" ADD FOREIGN KEY("A")REFERENCES "Role"("id") ON DELETE CASCADE ON UPDATE CASCADE;

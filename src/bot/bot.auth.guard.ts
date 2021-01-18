@@ -22,10 +22,9 @@ export class BotAuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const tgCtx = TelegrafExecutionContext.create(context);
-    const { from } = tgCtx.getContext<BotContext>();
-    const allowed = this.config.auth.admins.includes(from.id);
+    const { app, from } = tgCtx.getContext<BotContext>();
 
-    if (!allowed) {
+    if (!app.user) {
       throw BotException.unauthorized({
         from: from,
         reply: {

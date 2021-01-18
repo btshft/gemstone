@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Outbox } from '@prisma/client';
-import { ActionsQueue } from 'src/actions/queue/actions.queue';
+import { SagaQueueClient } from 'src/sagas/queue/saga.queue.client';
 import { OutboxTyped, OutboxTypes } from './outbox.types';
 
 interface OutboxProcessor {
@@ -8,27 +8,27 @@ interface OutboxProcessor {
 }
 
 @Injectable()
-export class OutboxTaskProcessor implements OutboxProcessor {
-  constructor(private queue: ActionsQueue) {}
+export class OutboxSagaProcessor implements OutboxProcessor {
+  constructor(private queue: SagaQueueClient) {}
 
   async process(outbox: Outbox): Promise<void> {
-    const { value } = <OutboxTyped<'outbox:action'>>outbox.content;
+    const { value } = <OutboxTyped<'outbox:saga'>>outbox.content;
 
-    await this.queue.request({
-      payload: value.action.payload,
-      type: value.action.type,
+    await this.queue.send({
+      sagaId: value.sagaId,
+      type: value.sagaType,
     });
   }
 }
 
 @Injectable()
 export class OutboxProcessorResolver {
-  constructor(private taskProcessor: OutboxTaskProcessor) {}
+  constructor(private sagaProcessor: OutboxSagaProcessor) {}
 
   resolve(type: OutboxTypes): OutboxProcessor {
     switch (type) {
-      case 'outbox:action':
-        return this.taskProcessor;
+      case 'outbox:saga':
+        return this.sagaProcessor;
 
       default:
         throw new Error(`Unsupported outbox type '${type}'`);
