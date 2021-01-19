@@ -10,6 +10,7 @@ import { appContext } from './app-context/app.context';
 import { PrismaModule } from 'src/database/services/prisma.module';
 import { Prisma } from 'src/database/services/prisma';
 import { UserModule } from 'src/user/user.module';
+import { fsm } from './fsm/fsm.context';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { UserModule } from 'src/user/user.module';
       ) => {
         return {
           token: config.token,
-          middlewares: [session(), wizard(), appContext(prisma)],
+          middlewares: [session(), wizard(), appContext(prisma), fsm()],
           launchOptions: {
             webhook: config.webhook.enabled
               ? {

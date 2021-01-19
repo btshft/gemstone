@@ -53,6 +53,7 @@
     "nestjs-telegraf": "^2.0.0-beta.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
+    "robot3": "^0.2.18",
     "rxjs": "^6.6.3",
     "socks-proxy-agent": "^5.0.0",
     "telegraf": "^3.38.0",
