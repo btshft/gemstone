@@ -28,7 +28,7 @@ class _StateMachineAccessor implements StateMachineAccessor {
       // intentionally empty
     });
 
-    this.bot.session[`__sm_${name}__`] = {
+    this.bot.session[`__sm_${name}__${this.bot.chat.id}`] = {
       service,
       renderer,
     };
@@ -40,7 +40,7 @@ class _StateMachineAccessor implements StateMachineAccessor {
     name: string,
   ): StateActivator<C, MachineStates> {
     const state: { service: Service<any>; renderer: any } = this.bot.session[
-      `__sm_${name}__`
+      `__sm_${name}__${this.bot.chat.id}`
     ];
 
     return <StateActivator<C, MachineStates>>(

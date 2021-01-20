@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   IgCheckpointError,
   ReelsMediaFeedResponseItem,
+  UserRepositoryInfoResponseUser,
 } from 'instagram-private-api';
 import { merge } from 'lodash';
 import { Observable } from 'rxjs';
@@ -24,6 +25,20 @@ export class IgService {
       this.logger.warn({
         message: 'Unable to resolve username -> user.id',
         username: username,
+        error: err.message || err,
+      });
+    }
+  }
+
+  async userInfo(
+    userId: number | string,
+  ): Promise<UserRepositoryInfoResponseUser> {
+    try {
+      return await this.ig.user.info(userId);
+    } catch (err) {
+      this.logger.warn({
+        message: 'Unable to resolve user.id -> user.info',
+        userId: userId,
         error: err.message || err,
       });
     }

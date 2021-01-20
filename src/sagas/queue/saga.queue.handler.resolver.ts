@@ -7,9 +7,9 @@ import {
   StoriesSaga,
   StoriesSagaState,
 } from '../saga.types';
-import { IgGetJsonHandler } from '../stories-request/ig-get-json.handler';
-import { S3UploadHandler } from '../stories-request/s3-upload.handler';
-import { TgSendHandler } from '../stories-request/tg-send.handler';
+import { IgGetJsonHandler } from '../stories/request/ig-get-json.handler';
+import { S3UploadHandler } from '../stories/request/s3-upload.handler';
+import { TgSendHandler } from '../stories/request/tg-send.handler';
 
 @Injectable()
 export class SagaHandlerResolver {

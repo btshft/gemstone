@@ -88,7 +88,10 @@ export function useActivator<
     try {
       await $render(service);
     } catch (err) {
-      logger.error(err);
+      logger.error({
+        message: err.message || 'unknown',
+        error: err,
+      });
       await $async({
         type: 'internal:exception',
       });

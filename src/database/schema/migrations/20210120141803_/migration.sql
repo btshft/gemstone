@@ -20,24 +20,22 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "ViewHistory" (
+    "id" TEXT NOT NULL,
+    "igUserId" TEXT NOT NULL,
+    "storyKey" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "RegistrationToken" (
     "id" TEXT NOT NULL,
     "value" TEXT NOT NULL,
     "userId" TEXT,
     "expiration" TIMESTAMP(3),
     "roles" "RoleName"[],
-
-    PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Notification" (
-    "id" TEXT NOT NULL,
-    "text" TEXT NOT NULL,
-    "seen" BOOLEAN NOT NULL DEFAULT false,
-    "metadata" JSONB,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" TEXT NOT NULL,
 
     PRIMARY KEY ("id")
 );
@@ -62,6 +60,7 @@ CREATE TABLE "Saga" (
     "faultedAt" TIMESTAMP(3),
     "fault" TEXT,
     "completedAt" TIMESTAMP(3),
+    "initiatorId" TEXT,
 
     PRIMARY KEY ("id")
 );
@@ -88,10 +87,13 @@ CREATE UNIQUE INDEX "_RoleToUser_AB_unique" ON "_RoleToUser"("A", "B");
 CREATE INDEX "_RoleToUser_B_index" ON "_RoleToUser"("B");
 
 -- AddForeignKey
+ALTER TABLE "ViewHistory" ADD FOREIGN KEY("userId")REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "RegistrationToken" ADD FOREIGN KEY("userId")REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Notification" ADD FOREIGN KEY("userId")REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Saga" ADD FOREIGN KEY("initiatorId")REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_RoleToUser" ADD FOREIGN KEY("A")REFERENCES "Role"("id") ON DELETE CASCADE ON UPDATE CASCADE;

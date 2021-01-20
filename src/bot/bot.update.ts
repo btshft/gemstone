@@ -1,5 +1,5 @@
 import { UseFilters } from '@nestjs/common';
-import { Ctx, Hears, Start, Update } from 'nestjs-telegraf';
+import { Ctx, Start, Update } from 'nestjs-telegraf';
 import { BotContext } from './bot.context';
 import { START_SCENE } from './scenes/start.scene';
 import { BotExceptionFilter } from './bot.exception.filter';

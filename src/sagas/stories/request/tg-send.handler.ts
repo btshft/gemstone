@@ -1,0 +1,136 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { chunk, orderBy } from 'lodash';
+import { InjectBot } from 'nestjs-telegraf';
+import { BotContext } from 'src/bot/bot.context';
+import { Prisma } from 'src/database/services/prisma';
+import { S3 } from 'src/s3/s3';
+import { indexed } from 'src/utils/helpers';
+import Telegraf from 'telegraf';
+import {
+  InputFileByURL,
+  InputMediaPhoto,
+  InputMediaVideo,
+  MessageMedia,
+} from 'telegraf/typings/telegram-types';
+import { SagaService } from '../../saga.service';
+import {
+  S3UploadedReel,
+  SagaHandler,
+  StoriesSagaTgSend,
+} from '../../saga.types';
+
+@Injectable()
+export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
+  private readonly logger = new Logger(TgSendHandler.name);
+
+  constructor(
+    private sagaService: SagaService,
+    @InjectBot() private bot: Telegraf<BotContext>,
+    private prisma: Prisma,
+    private s3: S3,
+  ) {}
+
+  private toMediaGroup(chunk: S3UploadedReel[]): MessageMedia[] {
+    return chunk.reduce<MessageMedia[]>((m, v) => {
+      const isVideo = v.media_type === 2;
+      const media: MessageMedia = isVideo
+        ? <InputMediaVideo>{
+            media: v.s3.presignedUrl,
+            type: 'video',
+            width: v.original_width,
+            height: v.original_height,
+          }
+        : <InputMediaPhoto>{
+            type: 'photo',
+            media: v.s3.presignedUrl,
+          };
+
+      return [...m, media];
+    }, []);
+  }
+
+  async handle(saga: StoriesSagaTgSend): Promise<void> {
+    const { metadata } = saga;
+    const { tgChatId, uploads } = metadata;
+
+    if (!uploads.length) {
+      await this.bot.telegram.sendMessage(
+        tgChatId,
+        `Sad news, user @${metadata.igUsername} has no new stories or I'm broken, dunno 💩`,
+      );
+
+      return;
+    }
+
+    await this.bot.telegram.sendMessage(
+      tgChatId,
+      `I've just downloaded ${uploads.length} @${metadata.igUsername} stories for ya, check them out 👻`,
+    );
+
+    const chunks = chunk(
+      orderBy(uploads, (u) => u.taken_at, 'asc'),
+      10,
+    );
+
+    for (const { index, value: chunk } of indexed(chunks)) {
+      const mediaGroup = this.toMediaGroup(chunk);
+      if (mediaGroup.length > 1) {
+        await this.bot.telegram.sendMediaGroup(metadata.tgChatId, mediaGroup);
+      } else {
+        const [media] = mediaGroup;
+        const [story] = chunk;
+        const isVideo = media.type === 'video';
+
+        if (isVideo) {
+          await this.bot.telegram.sendVideo(metadata.tgChatId, <InputFileByURL>{
+            filename: story.s3.key,
+            url: story.s3.presignedUrl,
+          });
+        } else {
+          await this.bot.telegram.sendPhoto(metadata.tgChatId, <InputFileByURL>{
+            filename: story.s3.key,
+            url: story.s3.presignedUrl,
+          });
+        }
+      }
+
+      if (chunks.length > 1) {
+        await this.bot.telegram.sendMessage(
+          metadata.tgChatId,
+          `Part ${index + 1} of ${chunks.length}`,
+        );
+      }
+    }
+
+    for (const reel of metadata.uploads) {
+      try {
+        await this.prisma.viewHistory.create({
+          data: {
+            igUserId: String(metadata.igUserId),
+            storyKey: reel.id,
+            user: {
+              connect: {
+                id: String(metadata.userId),
+              },
+            },
+          },
+        });
+      } catch (err) {
+        this.logger.error({
+          message: 'Unable save view history',
+          user_id: metadata.igUserId,
+          story_key: reel.id,
+        });
+      }
+    }
+
+    this.logger.log({
+      message: 'Stories sended to user',
+      user_id: metadata.userId,
+      chat_it: metadata.tgChatId,
+      count: metadata.uploads.length,
+    });
+
+    await this.sagaService.complete(saga.id);
+  }
+}

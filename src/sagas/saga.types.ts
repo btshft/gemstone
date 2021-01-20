@@ -1,7 +1,7 @@
 import { Saga } from '@prisma/client';
 import { Job } from 'bull';
 import { ReelsMediaFeedResponseItem } from 'instagram-private-api';
-import { Drop, TObject } from 'src/utils/utility.types';
+import { Drop } from 'src/utils/utility.types';
 
 export const SAGA_REQUEST_STORIES = 'saga:stories:request';
 
@@ -18,7 +18,7 @@ type _SagasCollection = {
     };
     ['tg:send']: _SagasCollection['saga:stories:request']['ig:get-json'] & {
       bucket: string;
-      keys: string[];
+      uploads: S3UploadedReel[];
     };
   };
 };
@@ -29,37 +29,31 @@ export type SagaStates<TType extends SagaTypes> = keyof _SagasCollection[TType];
 
 export type StoriesSagaState = keyof _SagasCollection['saga:stories:request'];
 
-type _BuildStoriesSaga<
-  TState extends StoriesSagaState,
-  TMetadata extends TObject
-> = Drop<Saga, 'metadata' | 'type' | 'state'> & {
+type _BuildStoriesSaga<TState extends StoriesSagaState> = Drop<
+  Saga,
+  'metadata' | 'type' | 'state'
+> & {
   state: TState;
   type: SagaType<'saga:stories:request'>;
-  metadata: TMetadata;
+  metadata: _SagasCollection['saga:stories:request'][TState];
+};
+
+export type S3UploadedReel = ReelsMediaFeedResponseItem & {
+  s3: {
+    key: string;
+    url: string;
+    presignedUrl: string;
+  };
 };
 
 // eslint-disable-next-line prettier/prettier
-export type StoriesSagaGetJson = _BuildStoriesSaga<'ig:get-json',
-  {
-    igUserId: string | number;
-    igUsername: string;
-    tgChatId: string | number;
-    userId: string;
-  }
->;
+export type StoriesSagaGetJson = _BuildStoriesSaga<'ig:get-json'>;
 
 // eslint-disable-next-line prettier/prettier
-export type StoriesSagaS3Upload = _BuildStoriesSaga<'s3:upload', {
-    stories: ReelsMediaFeedResponseItem[];
-  } & StoriesSagaGetJson['metadata']
->;
+export type StoriesSagaS3Upload = _BuildStoriesSaga<'s3:upload'>;
 
 // eslint-disable-next-line prettier/prettier
-export type StoriesSagaTgSend = _BuildStoriesSaga<'tg:send', {
-    bucket: string;
-    keys: string[];
-  } & StoriesSagaGetJson['metadata']
->;
+export type StoriesSagaTgSend = _BuildStoriesSaga<'tg:send'>;
 
 export type StoriesSaga =
   | StoriesSagaGetJson

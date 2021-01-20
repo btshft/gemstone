@@ -10,8 +10,8 @@ import { PrismaModule } from 'src/database/services/prisma.module';
 import { Prisma } from 'src/database/services/prisma';
 import { UserModule } from 'src/user/user.module';
 import { fsm } from './fsm/fsm.context';
-import { router } from './dialog-wizard/dialog.router';
-import { ui } from './dialog-wizard/dialog.ui';
+import { router } from './dialog/dialog.router';
+import { ui } from './dialog/dialog.ui';
 
 @Module({
   imports: [

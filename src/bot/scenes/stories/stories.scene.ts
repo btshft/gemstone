@@ -1,4 +1,6 @@
+import { UseGuards } from '@nestjs/common';
 import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
+import { Role } from 'src/bot/security/bot.role.guard';
 import { Markup } from 'telegraf';
 import { BotContext } from '../../bot.context';
 import { STORIES_REQUEST_SCENE } from './stories.request.scene';
@@ -10,17 +12,14 @@ const ACTIONS = {
   Request: 'action:stories:request',
 };
 
-export type StoriesSceneState = {
-  message: string;
-};
-
 @Scene(STORIES_SCENE)
+@UseGuards(Role('User'))
 export class StoriesScene {
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
-    const { ui, router } = ctx;
-    const { message } = router.state();
-    const text = message ? `Stories\n${message}` : 'Stories';
+    const { ui } = ctx;
+    const text =
+      "🔮 Stories\nHere you can request someone's stories or subscribe to them.";
 
     await ui.render(
       text,

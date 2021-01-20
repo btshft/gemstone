@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import {
   Action,
   Ctx,
@@ -7,6 +8,7 @@ import {
   SceneEnter,
 } from 'nestjs-telegraf';
 import { BotContext } from 'src/bot/bot.context';
+import { Role } from 'src/bot/security/bot.role.guard';
 import { IgService } from 'src/ig/ig.service';
 import { Markup } from 'telegraf';
 
@@ -23,6 +25,7 @@ type ChallengeState = {
 };
 
 @Scene(ADMINISTRATION_CHALLENGE_SCENE)
+@UseGuards(Role('Administrator'))
 export class AdministrationChallengeScene {
   constructor(private ig: IgService) {}
 

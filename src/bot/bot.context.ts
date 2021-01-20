@@ -2,8 +2,8 @@
 
 import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
 import { AppContext } from './app/app.context';
-import { DialogRouter } from './dialog-wizard/dialog.router';
-import { DialogUi } from './dialog-wizard/dialog.ui';
+import { DialogRouter } from './dialog/dialog.router';
+import { DialogUi } from './dialog/dialog.ui';
 import { StateMachineAccessor } from './fsm/fsm.context';
 
 export interface BotContext extends SceneContextMessageUpdate {

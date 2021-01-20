@@ -24,7 +24,18 @@ model User {
   telegramUserId String @unique
   telegramUsername String?
   roles Role[]
+  viewHistory ViewHistory[]
   token RegistrationToken?
+}
+
+model ViewHistory {
+  id String @id @default(cuid())
+  igUserId String
+  storyKey String
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([storyKey, igUserId])
 }
 
 model RegistrationToken {
@@ -45,6 +56,7 @@ model Outbox {
 model Saga {
   id String @id @default(uuid())
   type String
+  activityId String?
   state String
   metadata Json?
   transitionAt DateTime?
@@ -52,4 +64,8 @@ model Saga {
   faultedAt DateTime? 
   fault String?
   completedAt DateTime?
+  initiatorId String?
+  initiator User? @relation(fields: [initiatorId], references: [id])
+
+  @@index([initiatorId, activityId])
 }

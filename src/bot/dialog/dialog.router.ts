@@ -56,10 +56,9 @@ export class DialogRouter {
   }
 
   public state<T extends TObject>(update?: Partial<T>, scene?: string): T {
-    const [scenes] = this.scenes();
-    const [, activeScene] = scenes;
+    const [active] = reverse(this.scenes());
     const key = `__dialog_router_scene_state_${this.bot.chat.id}__${
-      scene || activeScene
+      scene || active
     }`;
 
     const state = this.bot.session[key] || {};
@@ -75,7 +74,7 @@ export class DialogRouter {
   }
 
   private scenes(update?: string[]): string[] {
-    const key = '__dialog_router__';
+    const key = `__dialog_router__${this.bot.chat.id}`;
     const current = this.bot.session[key] || [];
 
     if (!update) {

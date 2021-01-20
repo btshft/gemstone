@@ -12,31 +12,33 @@ const runner: ISeedRunner = {
       throw new Error('Unable to find any admninistrator');
     }
 
-    const role = await client.role.findFirst({
-      where: { name: RoleName.Administrator },
+    const roles = await client.role.findMany({
+      where: {
+        name: {
+          in: [RoleName.Administrator, RoleName.User],
+        },
+      },
     });
 
     for (const id of admins) {
-      const existing = await client.user.findUnique({
-        where: { telegramUserId: String(id) },
-      });
-
-      if (existing) {
-        console.log({
-          runner: runner.name,
-          message: `Skip admin user ${id}`,
-        });
-        continue;
-      }
-
-      await client.user.create({
-        data: {
+      await client.user.upsert({
+        where: {
+          telegramUserId: String(id),
+        },
+        create: {
           telegramUserId: String(id),
           telegramUsername: '<unknown>',
           roles: {
-            connect: {
-              id: role.id,
-            },
+            connect: roles.map((r) => ({
+              id: r.id,
+            })),
+          },
+        },
+        update: {
+          roles: {
+            connect: roles.map((r) => ({
+              id: r.id,
+            })),
           },
         },
       });

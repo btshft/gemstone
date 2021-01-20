@@ -46,9 +46,36 @@ export class DialogUi {
     } catch {}
   }
 
+  async delete(): Promise<void> {
+    const state = this.state();
+    if (state.handle) {
+      await this.$delete(state.handle);
+    }
+  }
+
+  async notification(message: string, extra?: ExtraReplyMessage, ttl?: number) {
+    const ms = ttl || 5000;
+    const wh = this.bot.telegram.webhookReply;
+
+    try {
+      this.bot.telegram.webhookReply = false;
+
+      const { message_id } = await this.bot.reply(message, extra);
+      setTimeout(async () => {
+        try {
+          await this.bot.deleteMessage(message_id);
+        } catch (err) {
+          // ignore
+        }
+      }, ms);
+    } finally {
+      this.bot.telegram.webhookReply = wh;
+    }
+  }
+
   async render(
     message: string,
-    markup: DialogMarkup,
+    markup?: DialogMarkup,
     options?: Partial<DialogOptions>,
   ): Promise<void> {
     const currentState = this.state();
@@ -178,7 +205,9 @@ export class DialogUi {
     return handle;
   }
 
-  private resolve(markup: DialogMarkup): InlineKeyboardMarkup {
+  private resolve(markup?: DialogMarkup): InlineKeyboardMarkup {
+    if (!markup) return Markup.inlineKeyboard([]);
+
     return 'inline_keyboard' in markup
       ? <InlineKeyboardMarkup>markup
       : 'reply_markup' in markup

@@ -9,6 +9,7 @@ import {
   IgEncryptedInternalState,
   IgInternalState,
 } from './models/ig-internal-state.model';
+import { throttleTime } from 'rxjs/operators';
 
 interface IgCheckpointHook<T> {
   name: string;
@@ -99,7 +100,7 @@ export async function createAugumented(
     });
   }
 
-  ig.request.end$.subscribe(async () => {
+  ig.request.end$.pipe(throttleTime(30_000)).subscribe(async () => {
     try {
       const checkpoint = await ig.checkpoint.commit();
       await store.write<IgEncryptedInternalState>(stateKey, {

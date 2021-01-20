@@ -30,6 +30,7 @@ export class S3 {
       secretKey: this.config.secretKey,
       port: this.config.port,
       useSSL: this.config.ssl,
+      region: 'us-east-1',
     });
   }
 
@@ -60,6 +61,11 @@ class S3Bucket {
     metadata?: TMeta,
   ): Promise<string> {
     return await this.minio.putObject(this.bucket, key, data, metadata);
+  }
+
+  async presignedUrl(key: string): Promise<string> {
+    const oneDay = 86400;
+    return await this.minio.presignedUrl('GET', this.bucket, key, oneDay);
   }
 
   async upload<TMeta extends TObject>(

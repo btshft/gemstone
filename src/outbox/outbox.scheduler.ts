@@ -15,7 +15,7 @@ export class OutboxScheduler {
     private resolve: OutboxProcessorResolver,
   ) {}
 
-  @Cron('*/10 * * * * *')
+  @Cron('*/5 * * * * *')
   async process(): Promise<void> {
     try {
       const outboxes = await this.prisma.outbox.findMany({

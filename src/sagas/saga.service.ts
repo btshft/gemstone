@@ -12,16 +12,24 @@ import {
 } from './saga.types';
 
 @Injectable()
-export class SagaService<TType extends AnySaga = AnySaga> {
+export class SagaService {
   constructor(private prisma: Prisma, private outbox: OutboxWriter) {}
 
-  async create(request: SagaCreate<TType>): Promise<void> {
+  async create<TType extends AnySaga = AnySaga>(
+    request: SagaCreate<TType>,
+  ): Promise<void> {
     const { id } = await this.prisma.saga.create({
       data: {
         state: <string>request.state,
         metadata: request.metadata,
         type: request.type,
         createdAt: utc(),
+        activityId: request.activityId,
+        initiator: {
+          connect: {
+            id: request.initiatorId,
+          },
+        },
       },
       select: {
         id: true,
@@ -29,6 +37,23 @@ export class SagaService<TType extends AnySaga = AnySaga> {
     });
 
     await this.process(id);
+  }
+
+  async activeExists(
+    initiatorId: string,
+    activityId: string,
+  ): Promise<boolean> {
+    const count = await this.prisma.saga.count({
+      where: {
+        activityId: activityId,
+        initiatorId: initiatorId,
+        faultedAt: null,
+        completedAt: null,
+      },
+      take: 1,
+    });
+
+    return count > 0;
   }
 
   async complete(sagaId: string, error?: string): Promise<void> {
@@ -52,11 +77,10 @@ export class SagaService<TType extends AnySaga = AnySaga> {
     });
   }
 
-  async move<TState extends SagaState<TType>>(
-    sagaId: string,
-    state: TState,
-    metadata: SagaMetadata<TType, TState>,
-  ) {
+  async move<
+    TType extends AnySaga = AnySaga,
+    TState extends SagaState<TType> = SagaState<TType>
+  >(sagaId: string, state: TState, metadata: SagaMetadata<TType, TState>) {
     const saga = await this.prisma.saga.findUnique({
       where: {
         id: sagaId,
@@ -64,6 +88,10 @@ export class SagaService<TType extends AnySaga = AnySaga> {
     });
 
     if (!saga) throw new Error(`Saga '${sagaId}' not found`);
+    if (saga.completedAt || saga.faultedAt) {
+      throw new Error(`Saga '${sagaId}' is completed or faulted`);
+    }
+
     await this.prisma.saga.update({
       where: {
         id: saga.id,

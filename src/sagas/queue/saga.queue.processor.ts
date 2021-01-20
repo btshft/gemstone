@@ -1,15 +1,16 @@
 import { Process, Processor } from '@nestjs/bull';
-import { utc } from 'src/utils/date-time';
 import { ResourceLock } from 'src/utils/resource-locker';
 import { SAGA_QUEUE_NAME } from './saga.queue.constants';
 import { SagaJob, SAGA_REQUEST_STORIES } from '../saga.types';
 import { SagaHandlerResolver } from './saga.queue.handler.resolver';
 import { SagaService } from '../saga.service';
 import { Prisma } from 'src/database/services/prisma';
+import { Logger } from '@nestjs/common';
 
 @Processor(SAGA_QUEUE_NAME)
 export class SagaQueueProcessor {
   private readonly lock: ResourceLock = new ResourceLock();
+  private readonly logger = new Logger(SagaQueueProcessor.name);
 
   constructor(
     private resolver: SagaHandlerResolver,
@@ -55,18 +56,19 @@ export class SagaQueueProcessor {
         }
       }
 
-      await this.sagaService.process(saga.id);
+      if (!updatedSaga.completedAt && !updatedSaga.faultedAt)
+        await this.sagaService.process(saga.id);
     } catch (err) {
-      await this.prisma.saga.update({
-        where: {
-          id: saga.id,
-        },
-        data: {
-          completedAt: utc(),
-          faultedAt: utc(),
-          fault: err.message || JSON.stringify(err),
-        },
+      this.logger.error({
+        message: 'Saga failure',
+        id: saga.id,
+        reasong: err.message || JSON.stringify(err),
       });
+
+      await this.sagaService.complete(
+        saga.id,
+        err.message || JSON.stringify(err),
+      );
     } finally {
       await lock.release();
     }
