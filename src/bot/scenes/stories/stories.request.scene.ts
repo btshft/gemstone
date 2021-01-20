@@ -254,8 +254,6 @@ export class StoriesRequestScene {
     const { router, ui } = bot;
     const state = router.state<StoriesRequestState>();
 
-    router.state({});
-
     await ui.delete();
     if (state.returnScene) {
       await router.navigate(state.returnScene);

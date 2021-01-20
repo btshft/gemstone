@@ -18,6 +18,7 @@ export class DialogRouter {
     }
 
     await scene.leave();
+    this.flush(active);
 
     history.pop();
     this.scenes([...history]);
@@ -42,6 +43,7 @@ export class DialogRouter {
 
     if (active) {
       await control.leave();
+      this.flush(active);
     }
 
     this.scenes([...history, scene]);
@@ -71,6 +73,15 @@ export class DialogRouter {
     }
 
     return state;
+  }
+
+  private flush(scene?: string): void {
+    const [active] = reverse(this.scenes());
+    const key = `__dialog_router_scene_state_${this.bot.chat.id}__${
+      scene || active
+    }`;
+
+    this.bot.session[key] = {};
   }
 
   private scenes(update?: string[]): string[] {
