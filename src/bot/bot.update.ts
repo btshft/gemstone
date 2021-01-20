@@ -1,10 +1,9 @@
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters } from '@nestjs/common';
 import { Ctx, Start, Update } from 'nestjs-telegraf';
 import { BotContext } from './bot.context';
 import { START_SCENE } from './scenes/start.scene';
 import { BotExceptionFilter } from './bot.exception.filter';
 import { UserService } from 'src/user/user.service';
-import { Role } from './security/bot.role.guard';
 
 const START_REGEXP = /^\/start(?:[ =](?<token>[0-9a-fA-F]+))?$/i;
 @Update()
@@ -21,6 +20,7 @@ export class BotUpdate {
       const valid = await this.userService.validateRegistrationToken(token);
       if (!valid) {
         await ctx.reply('Invalid token');
+        await this.userService.revokeRegistrationToken(token);
         return;
       }
 
