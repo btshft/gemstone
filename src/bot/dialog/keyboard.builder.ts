@@ -19,8 +19,11 @@ class _ForRole {
   public use(markup: _UseMarkup): KeyboardBuilder {
     return this.builder.stage((ctx) => {
       const { user } = ctx.app;
-      const userRoles = user.roles.map((r) => r.name);
+      if (!user) {
+        return Promise.resolve([]);
+      }
 
+      const userRoles = user.roles.map((r) => r.name);
       if (userRoles.some((ur) => this.roles.includes(ur))) {
         return this.resolve(markup);
       }

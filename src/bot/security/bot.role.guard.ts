@@ -16,7 +16,7 @@ export function Role(role: RoleName | '*'): CanActivate {
         return BotException.unauthorized({
           from: from,
           reply: {
-            message: "You're not authorized to access, sorry 👻",
+            message: "You're not authorized to access, sorry 🤷‍♂️",
             scene: false,
           },
         });

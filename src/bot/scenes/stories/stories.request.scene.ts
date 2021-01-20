@@ -37,7 +37,7 @@ export type StoriesRequestState = {
 };
 
 @Scene(STORIES_REQUEST_SCENE)
-@UseGuards(Role('User'))
+@UseGuards(Role('*'))
 export class StoriesRequestScene {
   constructor(private ig: IgService, private sagaService: SagaService) {}
 

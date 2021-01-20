@@ -1,17 +1,10 @@
-import { UseFilters } from '@nestjs/common';
-import {
-  Action,
-  Command,
-  Ctx,
-  Hears,
-  Scene,
-  SceneEnter,
-} from 'nestjs-telegraf';
+import { UseFilters, UseGuards } from '@nestjs/common';
+import { Action, Ctx, Hears, Scene, SceneEnter } from 'nestjs-telegraf';
 import { Markup } from 'telegraf';
 import { BotContext } from '../bot.context';
 import { BotExceptionFilter } from '../bot.exception.filter';
-import { router } from '../dialog/dialog.router';
 import { KeyboardBuilder } from '../dialog/keyboard.builder';
+import { Role } from '../security/bot.role.guard';
 import { ADMINISTRATION_SCENE } from './administration/administration.scene';
 import {
   ResolveProfileSceneState,
@@ -32,6 +25,7 @@ const ACTIONS = {
 
 @Scene(START_SCENE)
 @UseFilters(BotExceptionFilter)
+@UseGuards(Role('*'))
 export class StartScene {
   constructor(private markupBuilder: KeyboardBuilder) {}
 

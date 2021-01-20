@@ -19,6 +19,9 @@ import {
   StoriesSagaTgSend,
 } from '../../saga.types';
 
+const MAX_ALBUM_SIZE = 10;
+const VIDEO_MEDIA_TYPE = 2;
+
 @Injectable()
 export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
   private readonly logger = new Logger(TgSendHandler.name);
@@ -32,7 +35,7 @@ export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
 
   private toMediaGroup(chunk: S3UploadedReel[]): MessageMedia[] {
     return chunk.reduce<MessageMedia[]>((m, v) => {
-      const isVideo = v.media_type === 2;
+      const isVideo = v.media_type === VIDEO_MEDIA_TYPE;
       const media: MessageMedia = isVideo
         ? <InputMediaVideo>{
             media: {
@@ -76,7 +79,7 @@ export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
 
     const chunks = chunk(
       orderBy(uploads, (u) => u.taken_at, 'asc'),
-      10,
+      MAX_ALBUM_SIZE,
     );
 
     for (const { index, value: chunk } of indexed(chunks)) {

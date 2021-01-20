@@ -1,9 +1,10 @@
-import { UseFilters } from '@nestjs/common';
+import { UseFilters, UseGuards } from '@nestjs/common';
 import { Ctx, Start, Update } from 'nestjs-telegraf';
 import { BotContext } from './bot.context';
 import { START_SCENE } from './scenes/start.scene';
 import { BotExceptionFilter } from './bot.exception.filter';
 import { UserService } from 'src/user/user.service';
+import { Role } from './security/bot.role.guard';
 
 const START_REGEXP = /^\/start(?:[ =](?<token>[0-9a-fA-F]+))?$/i;
 @Update()
@@ -12,6 +13,7 @@ export class BotUpdate {
   constructor(private userService: UserService) {}
 
   @Start()
+  @UseGuards(Role('*'))
   async start(@Ctx() ctx: BotContext): Promise<void> {
     const { router } = ctx;
     const { token } = ctx.update.message.text.match(START_REGEXP).groups;

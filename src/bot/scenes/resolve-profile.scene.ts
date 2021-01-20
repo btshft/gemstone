@@ -1,7 +1,9 @@
+import { UseGuards } from '@nestjs/common';
 import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
 import { IgService } from 'src/ig/ig.service';
 import { Markup } from 'telegraf';
 import { BotContext } from '../bot.context';
+import { Role } from '../security/bot.role.guard';
 import { START_SCENE } from './start.scene';
 import {
   StoriesRequestState,
@@ -21,6 +23,7 @@ const ACTIONS = {
 };
 
 @Scene(RESOLVE_PROFILE_SCENE)
+@UseGuards(Role('*'))
 export class ResolveProfileScene {
   constructor(private ig: IgService) {}
 

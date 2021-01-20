@@ -13,7 +13,7 @@ const ACTIONS = {
 };
 
 @Scene(STORIES_SCENE)
-@UseGuards(Role('User'))
+@UseGuards(Role('*'))
 export class StoriesScene {
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
