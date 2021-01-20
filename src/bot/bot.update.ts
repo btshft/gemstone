@@ -13,7 +13,6 @@ export class BotUpdate {
   constructor(private userService: UserService) {}
 
   @Start()
-  @UseGuards(Role('*'))
   async start(@Ctx() ctx: BotContext): Promise<void> {
     const { router } = ctx;
     const { token } = ctx.update.message.text.match(START_REGEXP).groups;
