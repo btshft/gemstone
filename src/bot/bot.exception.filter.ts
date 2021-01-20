@@ -32,8 +32,8 @@ export class BotExceptionFilter implements ExceptionFilter {
     context: BotContext,
     message: string,
   ): Promise<void> {
-    const { dialog } = context;
+    const { router } = context;
 
-    await dialog.navigate<ErrorSceneState>(ERROR_SCENE, { message: message });
+    await router.navigate<ErrorSceneState>(ERROR_SCENE, { message: message });
   }
 }

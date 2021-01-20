@@ -18,11 +18,11 @@ export type StoriesSceneState = {
 export class StoriesScene {
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    const { message } = dialog.state();
+    const { ui, router } = ctx;
+    const { message } = router.state();
     const text = message ? `Stories\n${message}` : 'Stories';
 
-    await dialog.ui(
+    await ui.render(
       text,
       Markup.inlineKeyboard(
         [
@@ -36,13 +36,13 @@ export class StoriesScene {
 
   @Action(ACTIONS.Request)
   async request(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.navigate(STORIES_REQUEST_SCENE);
+    const { router } = ctx;
+    await router.navigate(STORIES_REQUEST_SCENE);
   }
 
   @Action(ACTIONS.Back)
   async back(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.return();
+    const { router } = ctx;
+    await router.return();
   }
 }

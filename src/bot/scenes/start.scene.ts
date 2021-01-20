@@ -21,27 +21,27 @@ const ACTIONS = {
 export class StartScene {
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<any> {
-    const { dialog } = ctx;
+    const { ui } = ctx;
     const message = `Hi, ${ctx.from.first_name} 👋`;
     const buttons = [
       Markup.callbackButton('Administration', ACTIONS.Administration),
       Markup.callbackButton('Stories', ACTIONS.Stories),
     ];
 
-    await dialog.ui(message, buttons);
+    await ui.render(message, buttons);
   }
 
   @Action(ACTIONS.Administration)
   @UseGuards(Role('Administrator'))
   async administration(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.navigate(ADMINISTRATION_SCENE);
+    const { router } = ctx;
+    await router.navigate(ADMINISTRATION_SCENE);
   }
 
   @Action(ACTIONS.Stories)
   @UseGuards(Role('*'))
   async stories(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.navigate(STORIES_SCENE);
+    const { router } = ctx;
+    await router.navigate(STORIES_SCENE);
   }
 }

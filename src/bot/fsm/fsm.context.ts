@@ -1,32 +1,29 @@
-import {
-  Machine,
-  MachineState,
-  interpret,
-  createMachine,
-  Service,
-} from 'robot3';
+import { interpret, createMachine, Service } from 'robot3';
+import { TObject } from 'src/utils/utility.types';
 import { MiddlewareFn } from 'telegraf/typings/composer';
 import { BotContext } from '../bot.context';
-import { StateActivator, useActivator } from './fsm.core';
+import { MachineStates, StateActivator, useActivator } from './fsm.core';
 
 export interface StateMachineAccessor {
-  create<S, M extends Machine>(
+  create<C extends TObject = TObject, S extends MachineStates = MachineStates>(
     name: string,
-    states: { [K in keyof S]: MachineState },
+    states: MachineStates,
     renderer: InstanceType<any>,
-  ): StateActivator<M>;
+  ): StateActivator<C, S>;
 
-  get<M extends Machine>(name: string): StateActivator<M>;
+  get<C extends TObject = TObject>(
+    name: string,
+  ): StateActivator<C, MachineStates>;
 }
 
 class _StateMachineAccessor implements StateMachineAccessor {
   public bot: BotContext;
 
-  create<S, M extends Machine>(
+  create<C extends TObject = TObject, S extends MachineStates = MachineStates>(
     name: string,
-    states: { [K in keyof S]: MachineState },
+    states: MachineStates,
     renderer: InstanceType<any>,
-  ): StateActivator<M> {
+  ): StateActivator<C, S> {
     const service = interpret(createMachine(<any>states), () => {
       // intentionally empty
     });
@@ -36,15 +33,17 @@ class _StateMachineAccessor implements StateMachineAccessor {
       renderer,
     };
 
-    return <StateActivator<M>>useActivator(service, this.bot, renderer);
+    return <StateActivator<C, S>>useActivator(service, this.bot, renderer);
   }
 
-  get<M extends Machine>(name: string): StateActivator<M> {
+  get<C extends TObject = TObject>(
+    name: string,
+  ): StateActivator<C, MachineStates> {
     const state: { service: Service<any>; renderer: any } = this.bot.session[
       `__sm_${name}__`
     ];
 
-    return <StateActivator<M>>(
+    return <StateActivator<C, MachineStates>>(
       useActivator(state.service, this.bot, state.renderer)
     );
   }

@@ -13,7 +13,7 @@ export class BotUpdate {
 
   @Start()
   async start(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
+    const { router } = ctx;
     const { token } = ctx.update.message.text.match(START_REGEXP).groups;
 
     if (token) {
@@ -36,8 +36,6 @@ export class BotUpdate {
       await this.userService.revokeRegistrationToken(token);
     }
 
-    await dialog.navigate(START_SCENE, {
-      fromDialog: false,
-    });
+    await router.navigate(START_SCENE);
   }
 }

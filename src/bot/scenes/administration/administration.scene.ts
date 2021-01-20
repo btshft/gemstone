@@ -22,7 +22,7 @@ export class AdministrationScene {
 
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
+    const { ui } = ctx;
     const message = `Select option`;
     const buttons = [
       Markup.callbackButton('Login', ACTIONS.Login),
@@ -32,42 +32,43 @@ export class AdministrationScene {
       Markup.callbackButton('Back', ACTIONS.Back),
     ];
 
-    await dialog.ui(message, Markup.inlineKeyboard(buttons, { columns: 2 }));
+    await ui.render(message, Markup.inlineKeyboard(buttons, { columns: 2 }));
   }
 
   @Action(ACTIONS.Back)
   async back(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.return();
+    const { router } = ctx;
+    await router.return();
   }
 
   @Action(ACTIONS.Login)
   async login(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
+    const { ui } = ctx;
     const status = await this.ig.authenticate();
-    await dialog.answer(`Login ${status}`);
+
+    await ui.popup(`Login ${status}`);
   }
 
   @Action(ACTIONS.Challenge)
   async challenge(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.navigate(ADMINISTRATION_CHALLENGE_SCENE);
+    const { router } = ctx;
+    await router.navigate(ADMINISTRATION_CHALLENGE_SCENE);
   }
 
   @Action(ACTIONS.State)
   async state(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.navigate(ADMINISTRATION_STATE_SCENE);
+    const { router } = ctx;
+    await router.navigate(ADMINISTRATION_STATE_SCENE);
   }
 
   @Action(ACTIONS.IssueToken)
   async issueToken(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
+    const { router } = ctx;
     const token = await this.userService.issueRegistrationToken(['User']);
 
     await ctx.replyWithHTML(
       `Token: <code>${token}</code>\nLink: <a href="">https://t.me/${ctx.me}?start=${token}</a>`,
     );
-    await dialog.ui();
+    await router.navigate(ADMINISTRATION_SCENE);
   }
 }

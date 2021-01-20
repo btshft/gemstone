@@ -16,8 +16,8 @@ export type ErrorSceneState = {
 export class ErrorScene {
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<any> {
-    const { dialog } = ctx;
-    const state = dialog.state<ErrorSceneState>();
+    const { ui, router } = ctx;
+    const state = router.state<ErrorSceneState>();
     const buttons = [
       {
         callback_data: ACTIONS.Back,
@@ -26,12 +26,12 @@ export class ErrorScene {
       },
     ];
 
-    await dialog.ui(state.message, buttons);
+    await ui.render(state.message, buttons);
   }
 
   @Action(ACTIONS.Back)
   async back(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.return({ fallback: START_SCENE });
+    const { router } = ctx;
+    await router.navigate(START_SCENE);
   }
 }

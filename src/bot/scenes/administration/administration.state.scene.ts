@@ -15,7 +15,7 @@ export class AdministrationStateScene {
 
   @SceneEnter()
   async enter(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
+    const { ui } = ctx;
     const state = await this.ig.state();
     const message = `IG state 👾\n<code>${JSON.stringify(
       state,
@@ -24,12 +24,12 @@ export class AdministrationStateScene {
     )}</code>`;
 
     const buttons = [Markup.callbackButton('Back', ACTIONS.Back)];
-    await dialog.ui(message, buttons, { parse_mode: 'HTML' });
+    await ui.render(message, buttons, { parse_mode: 'HTML' });
   }
 
   @Action(ACTIONS.Back)
   async back(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.return();
+    const { router } = ctx;
+    await router.return();
   }
 }

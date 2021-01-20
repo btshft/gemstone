@@ -28,13 +28,13 @@ export class AdministrationChallengeScene {
 
   @SceneEnter()
   async start(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
+    const { router, ui } = ctx;
 
-    dialog.state<ChallengeState>({
+    router.state<ChallengeState>({
       started: false,
     });
 
-    await dialog.ui('Select start to begin challenge process', [
+    await ui.render('Select start to begin challenge process', [
       Markup.callbackButton('Start', ACTIONS.Start),
       Markup.callbackButton('Back', ACTIONS.Back),
     ]);
@@ -42,19 +42,19 @@ export class AdministrationChallengeScene {
 
   @Action(ACTIONS.Start)
   async init(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
+    const { router, ui } = ctx;
     const started = await this.ig.startChallenge();
     if (!started) {
-      await dialog.ui('Unable to start challenge procedure', [
+      await ui.render('Unable to start challenge procedure', [
         Markup.callbackButton('Retry', ACTIONS.Retry),
         Markup.callbackButton('Back', ACTIONS.Back),
       ]);
     } else {
-      dialog.state<ChallengeState>({
+      router.state<ChallengeState>({
         started: started,
       });
 
-      await dialog.ui('Enter code below', [
+      await ui.render('Enter code below', [
         Markup.callbackButton('Back', ACTIONS.Back),
       ]);
     }
@@ -65,15 +65,15 @@ export class AdministrationChallengeScene {
     @Ctx() ctx: BotContext,
     @Message('text') message: string,
   ): Promise<void> {
-    const { dialog } = ctx;
-    const { started } = dialog.state<ChallengeState>();
+    const { router, ui } = ctx;
+    const { started } = router.state<ChallengeState>();
     if (started) {
       const result = await this.ig.completeChallenge(message);
       if (result) {
         ctx.reply('Challenge succeed!');
-        await dialog.return();
+        await router.return();
       } else {
-        await dialog.ui('Unable to complete challenge procedure', [
+        await ui.render('Unable to complete challenge procedure', [
           Markup.callbackButton('Retry', ACTIONS.Retry),
           Markup.callbackButton('Back', ACTIONS.Back),
         ]);
@@ -83,13 +83,13 @@ export class AdministrationChallengeScene {
 
   @Action(ACTIONS.Retry)
   async retry(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.navigate(ADMINISTRATION_CHALLENGE_SCENE);
+    const { router } = ctx;
+    await router.navigate(ADMINISTRATION_CHALLENGE_SCENE);
   }
 
   @Action(ACTIONS.Back)
   async back(@Ctx() ctx: BotContext): Promise<void> {
-    const { dialog } = ctx;
-    await dialog.return();
+    const { router } = ctx;
+    await router.return();
   }
 }

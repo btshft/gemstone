@@ -1,5 +1,4 @@
 import { RoleName, User } from '@prisma/client';
-import { th } from 'date-fns/locale';
 import { Prisma } from 'src/database/services/prisma';
 import { MiddlewareFn } from 'telegraf/typings/composer';
 import { BotContext } from '../bot.context';
@@ -36,7 +35,7 @@ class _AppContext implements AppContext {
   }
 }
 
-export function appContext(prisma: Prisma): MiddlewareFn<BotContext> {
+export function app(prisma: Prisma): MiddlewareFn<BotContext> {
   return async function (ctx, next) {
     if (!ctx.app) {
       ctx.app = new _AppContext(prisma, ctx);

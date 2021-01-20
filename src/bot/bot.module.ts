@@ -5,12 +5,13 @@ import { session } from 'telegraf';
 import botConfiguration from './bot.configuration';
 import { BotUpdate } from './bot.update';
 import { ScenesModule } from './scenes/scenes.module';
-import { wizard } from './dialog-wizard/dialog.wizard';
-import { appContext } from './app-context/app.context';
+import { app } from './app/app.context';
 import { PrismaModule } from 'src/database/services/prisma.module';
 import { Prisma } from 'src/database/services/prisma';
 import { UserModule } from 'src/user/user.module';
 import { fsm } from './fsm/fsm.context';
+import { router } from './dialog-wizard/dialog.router';
+import { ui } from './dialog-wizard/dialog.ui';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { fsm } from './fsm/fsm.context';
       ) => {
         return {
           token: config.token,
-          middlewares: [session(), wizard(), appContext(prisma), fsm()],
+          middlewares: [session(), ui(), router(), fsm(), app(prisma)],
           launchOptions: {
             webhook: config.webhook.enabled
               ? {
