@@ -35,14 +35,20 @@ export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
       const isVideo = v.media_type === 2;
       const media: MessageMedia = isVideo
         ? <InputMediaVideo>{
-            media: v.s3.presignedUrl,
+            media: {
+              url: v.s3.presignedUrl,
+              filename: v.s3.key,
+            },
             type: 'video',
             width: v.original_width,
             height: v.original_height,
           }
         : <InputMediaPhoto>{
             type: 'photo',
-            media: v.s3.presignedUrl,
+            media: {
+              url: v.s3.presignedUrl,
+              filename: v.s3.key,
+            },
           };
 
       return [...m, media];
