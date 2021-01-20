@@ -6,5 +6,6 @@ export default registerAs('app', () => ({
     host: process.env.QUEUE_HOST || 'localhost',
     port: parseInt(process.env.QUEUE_PORT) || 6379,
     password: process.env.QUEUE_PASSWORD,
+    prefix: process.env.QUEUE_PREFIX,
   },
 }));

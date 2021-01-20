@@ -23,6 +23,7 @@ import { StoreModule } from './store/store.module';
           host: config.queue.host,
           port: config.queue.port,
           password: config.queue.password,
+          keyPrefix: config.queue.prefix,
         },
       }),
       inject: [appConfiguration.KEY],

@@ -59,6 +59,7 @@ export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
         `Sad news, user @${metadata.igUsername} has no new stories or I'm broken, dunno 💩`,
       );
 
+      await this.sagaService.complete(saga.id);
       return;
     }
 
