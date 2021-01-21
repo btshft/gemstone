@@ -1,6 +1,6 @@
 import { Action, Ctx, Scene, SceneEnter } from 'nestjs-telegraf';
 import { BotContext } from '../bot.context';
-import { START_SCENE } from './start.scene';
+import { START_SCENE } from './start/start.scene';
 
 export const ERROR_SCENE = 'ERROR_SCENE';
 

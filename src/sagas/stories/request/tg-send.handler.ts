@@ -65,7 +65,7 @@ export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
     if (!uploads.length) {
       await this.bot.telegram.sendMessage(
         tgChatId,
-        `Sad news, user @${metadata.igUsername} has no new stories or I'm broken, dunno 💩`,
+        `Sad news, user @${metadata.igUsername} has no new stories 😒`,
       );
 
       await this.sagaService.complete(saga.id);
@@ -74,7 +74,7 @@ export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
 
     await this.bot.telegram.sendMessage(
       tgChatId,
-      `I've just downloaded ${uploads.length} @${metadata.igUsername} stories for ya, check them out 👻`,
+      `I've just downloaded ${uploads.length} @${metadata.igUsername} stories for you, check them out 👻`,
     );
 
     const chunks = chunk(

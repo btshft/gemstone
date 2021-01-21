@@ -3,11 +3,20 @@ import { TObject } from 'src/utils/utility.types';
 import { MiddlewareFn } from 'telegraf/typings/composer';
 import { BotContext } from '../bot.context';
 
+export type ReturnOptions = {
+  silent: boolean;
+};
+
+export type NavigateOptions = {
+  silent: boolean;
+};
+
 export class DialogRouter {
   constructor(private readonly bot: BotContext) {}
 
   public async return<TState extends TObject = TObject>(
     state?: TState,
+    options?: Partial<ReturnOptions>,
   ): Promise<void> {
     const { scene } = this.bot;
     const history = this.scenes();
@@ -27,7 +36,8 @@ export class DialogRouter {
       this.state(state, previous);
     }
 
-    await scene.enter(previous, scene);
+    const silent = options?.silent ?? false;
+    await scene.enter(previous, scene, silent);
     try {
       await this.bot.answerCbQuery();
     } catch {}
@@ -36,6 +46,7 @@ export class DialogRouter {
   public async navigate<TState extends TObject = TObject>(
     scene: string,
     state?: TState,
+    options?: Partial<NavigateOptions>,
   ): Promise<void> {
     const { scene: control } = this.bot;
     const history = this.scenes();
@@ -51,7 +62,8 @@ export class DialogRouter {
       this.state(state, scene);
     }
 
-    await control.enter(scene, state);
+    const silent = options?.silent ?? false;
+    await control.enter(scene, state, silent);
     try {
       await this.bot.answerCbQuery();
     } catch {}

@@ -46,7 +46,7 @@ export class DialogUi {
     } catch {}
   }
 
-  async delete(): Promise<void> {
+  async destroy(): Promise<void> {
     const state = this.state();
     if (state.handle) {
       await this.$delete(state.handle);

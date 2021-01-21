@@ -25,6 +25,7 @@ model User {
   telegramUsername String?
   roles Role[]
   viewHistory ViewHistory[]
+  favorites Favorite[]
   token RegistrationToken?
 }
 
@@ -51,6 +52,19 @@ model Outbox {
   id String @id @default(cuid())
   metadata Json?
   content Json
+}
+
+model Favorite {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  hash String?
+  type String
+  alias String
+  parameters Json?
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([hash])
 }
 
 model Saga {

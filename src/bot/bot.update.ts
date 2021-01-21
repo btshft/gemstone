@@ -1,11 +1,13 @@
 import { UseFilters } from '@nestjs/common';
 import { Ctx, Start, Update } from 'nestjs-telegraf';
 import { BotContext } from './bot.context';
-import { START_SCENE } from './scenes/start.scene';
 import { BotExceptionFilter } from './bot.exception.filter';
 import { UserService } from 'src/user/user.service';
+import { START_SCENE } from './scenes/start/start.scene';
+import { Extra, Markup } from 'telegraf';
 
 const START_REGEXP = /^\/start(?:[ =](?<token>[0-9a-fA-F]+))?$/i;
+
 @Update()
 @UseFilters(BotExceptionFilter)
 export class BotUpdate {
@@ -37,6 +39,19 @@ export class BotUpdate {
       await this.userService.revokeRegistrationToken(token);
     }
 
-    await router.navigate(START_SCENE);
+    if (ctx.app.user) {
+      const buttons = [Markup.button('Favorites')];
+
+      if (ctx.app.user.roles.some((r) => r.name === 'Administrator')) {
+        buttons.push(Markup.button('Administration'));
+      }
+
+      await ctx.reply(
+        `Hi, ${ctx.from.first_name} 👋\nGreat to see you!`,
+        Extra.markup(Markup.keyboard(buttons, { columns: 2 }).resize()),
+      );
+
+      await router.navigate(START_SCENE);
+    }
   }
 }

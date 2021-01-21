@@ -9,10 +9,11 @@ import { AdministrationChallengeScene } from './administration/administration.ch
 import { AdministrationScene } from './administration/administration.scene';
 import { AdministrationStateScene } from './administration/administration.state.scene';
 import { ErrorScene } from './error.scene';
-import { ResolveProfileScene } from './resolve-profile.scene';
-import { StartScene } from './start.scene';
-import { StoriesRequestScene } from './stories/stories.request.scene';
-import { StoriesScene } from './stories/stories.scene';
+import { ProfileDialogFactory } from './start/dialogs/profile.dialog.factory';
+import { FavoritesModule } from 'src/favorites/favorites.module';
+import { StartScene } from './start/start.scene';
+import { FavoritesDialogFactory } from './start/dialogs/favorites.dialog.factory';
+import { StoriesRequester } from './start/services/stories.requester';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { StoriesScene } from './stories/stories.scene';
     IgModule,
     SagaModule,
     UserModule,
+    FavoritesModule,
   ],
   providers: [
     StartScene,
@@ -27,10 +29,10 @@ import { StoriesScene } from './stories/stories.scene';
     AdministrationStateScene,
     AdministrationChallengeScene,
     ErrorScene,
-    StoriesScene,
-    StoriesRequestScene,
-    ResolveProfileScene,
     KeyboardBuilder,
+    ProfileDialogFactory,
+    FavoritesDialogFactory,
+    StoriesRequester,
   ],
 })
 export class ScenesModule {}

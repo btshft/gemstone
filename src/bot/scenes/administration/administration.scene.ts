@@ -40,8 +40,9 @@ export class AdministrationScene {
 
   @Action(ACTIONS.Back)
   async back(@Ctx() ctx: BotContext): Promise<void> {
-    const { router } = ctx;
-    await router.return();
+    const { router, ui } = ctx;
+    await ui.destroy();
+    await router.return({}, { silent: true });
   }
 
   @Action(ACTIONS.Login)
