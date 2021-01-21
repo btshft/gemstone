@@ -12,6 +12,7 @@ import { S3UploadHandler } from './stories/request/s3-upload.handler';
 import { TgSendHandler } from './stories/request/tg-send.handler';
 import { IgModule } from 'src/ig/ig.module';
 import { S3Module } from 'src/s3/s3.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   providers: [
@@ -29,6 +30,7 @@ import { S3Module } from 'src/s3/s3.module';
     S3Module,
     IgModule,
     PrismaModule,
+    NotificationsModule,
     BullModule.registerQueue({
       name: SAGA_QUEUE_NAME,
     }),

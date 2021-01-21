@@ -18,7 +18,6 @@ export class SagaQueueClient {
   async send(request: SagaJobPayload<SagaTypes>): Promise<void> {
     await this.queue.add(request.type, request, {
       removeOnComplete: true,
-      removeOnFail: true,
       attempts: SAGA_QUEUE_REPROCESS_ATTEMPTS,
       backoff: <BackoffOptions>{
         type: 'exponential',

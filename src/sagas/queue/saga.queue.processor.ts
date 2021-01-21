@@ -1,11 +1,18 @@
 import { Process, Processor } from '@nestjs/bull';
 import { ResourceLock } from 'src/utils/resource-locker';
 import { SAGA_QUEUE_NAME } from './saga.queue.constants';
-import { SagaJob, SAGA_REQUEST_STORIES } from '../saga.types';
+import {
+  SagaJob,
+  SagaTypes,
+  SAGA_REQUEST_STORIES,
+  StoriesSaga,
+} from '../saga.types';
 import { SagaHandlerResolver } from './saga.queue.handler.resolver';
 import { SagaService } from '../saga.service';
 import { Prisma } from 'src/database/services/prisma';
 import { Logger } from '@nestjs/common';
+import { OutboxWriter } from 'src/outbox/outbox.writer';
+import { Saga } from '@prisma/client';
 
 @Processor(SAGA_QUEUE_NAME)
 export class SagaQueueProcessor {
@@ -16,6 +23,7 @@ export class SagaQueueProcessor {
     private resolver: SagaHandlerResolver,
     private sagaService: SagaService,
     private prisma: Prisma,
+    private outbox: OutboxWriter,
   ) {}
 
   @Process(SAGA_REQUEST_STORIES)
@@ -69,8 +77,34 @@ export class SagaQueueProcessor {
         saga.id,
         err.message || JSON.stringify(err),
       );
+
+      await this.tryReportFailure(saga);
     } finally {
       await lock.release();
+    }
+  }
+
+  private async tryReportFailure(saga: Saga): Promise<void> {
+    try {
+      const type = <SagaTypes>saga.type;
+      if (type === 'saga:stories:request') {
+        const storiesSaga = <StoriesSaga>saga;
+        if (storiesSaga.metadata) {
+          await this.outbox.write<'outbox:notification'>({
+            type: 'outbox:notification',
+            value: {
+              chatId: storiesSaga.metadata.tgChatId,
+              text: `I failed to get @${storiesSaga.metadata.igUsername} stories due to an error 😥`,
+            },
+          });
+        }
+      }
+    } catch (err) {
+      this.logger.error({
+        message: 'Unable to notify about failure',
+        reason: err.message || JSON.stringify(err),
+        saga_id: saga?.id,
+      });
     }
   }
 }
