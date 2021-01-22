@@ -155,6 +155,7 @@ export class FollowersInsight {
   }
 
   async craftToken(insightId: string): Promise<InsightAccessToken> {
+    if (!insightId) throw new Error('Insigh Id must be provided');
     const insight = await this.prisma.insight.count({
       where: {
         id: insightId,
@@ -195,6 +196,10 @@ export class FollowersInsight {
     token: string,
     insightId: string,
   ): Promise<InsightAccessToken | undefined> {
+    if (!token || !insightId) {
+      return undefined;
+    }
+
     const insight = await this.prisma.insight.count({
       where: {
         id: insightId,
