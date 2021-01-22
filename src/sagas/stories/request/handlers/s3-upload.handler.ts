@@ -3,18 +3,19 @@ import cuid from 'cuid';
 import { ReelsMediaFeedResponseItem } from 'instagram-private-api';
 import { Prisma } from 'src/database/services/prisma';
 import { S3 } from 'src/s3/s3';
+import { SagaHandler } from 'src/sagas/saga.types';
 import { compact } from 'src/utils/helpers';
-import { SagaService } from '../../saga.service';
+import { SagaService } from '../../../saga.service';
 import {
+  RequestStoriesSaga,
+  RequestStoriesSagaS3Upload,
   S3UploadedReel,
-  SagaHandler,
-  StoriesSaga,
-  StoriesSagaS3Upload,
-} from '../../saga.types';
-import { StoryFileMetadata } from './story.file.metadata';
+} from '../saga.request-stories';
+import { StoryFileMetadata } from '../story.file.metadata';
 
 @Injectable()
-export class S3UploadHandler implements SagaHandler<StoriesSagaS3Upload> {
+// eslint-disable-next-line prettier/prettier
+export class S3UploadHandler implements SagaHandler<RequestStoriesSagaS3Upload> {
   private readonly logger = new Logger(S3UploadHandler.name);
 
   constructor(
@@ -23,7 +24,7 @@ export class S3UploadHandler implements SagaHandler<StoriesSagaS3Upload> {
     private prisma: Prisma,
   ) {}
 
-  async handle(saga: StoriesSagaS3Upload): Promise<void> {
+  async handle(saga: RequestStoriesSagaS3Upload): Promise<void> {
     const { metadata } = saga;
     const bucketName = `u${metadata.userId}-ig${metadata.igUserId}`;
     const bucket = await this.s3.bucket(bucketName);
@@ -94,7 +95,7 @@ export class S3UploadHandler implements SagaHandler<StoriesSagaS3Upload> {
       uploaded_count: uploaded.length,
     });
 
-    await this.sagaService.move<StoriesSaga>(saga.id, 'tg:send', {
+    await this.sagaService.move<RequestStoriesSaga>(saga.id, 'tg:send', {
       ...metadata,
       bucket: bucketName,
       uploads: uploaded,

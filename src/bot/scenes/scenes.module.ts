@@ -14,6 +14,7 @@ import { FavoritesModule } from 'src/favorites/favorites.module';
 import { StartScene } from './start/start.scene';
 import { FavoritesDialogFactory } from './start/dialogs/favorites.dialog.factory';
 import { StoriesRequester } from './start/services/stories.requester';
+import { InsightModule } from 'src/insight/insight.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { StoriesRequester } from './start/services/stories.requester';
     SagaModule,
     UserModule,
     FavoritesModule,
+    InsightModule,
   ],
   providers: [
     StartScene,

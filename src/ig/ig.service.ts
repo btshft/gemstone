@@ -1,11 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Mutex } from 'async-mutex';
 import {
+  AccountFollowersFeedResponseUsersItem,
+  AccountFollowingFeedResponseUsersItem,
   IgCheckpointError,
   ReelsMediaFeedResponseItem,
   UserRepositoryInfoResponseUser,
 } from 'instagram-private-api';
-import { merge } from 'lodash';
-import { Observable } from 'rxjs';
+import { merge, random } from 'lodash';
+import { Observable, of } from 'rxjs';
+import { concatMap, delay, finalize } from 'rxjs/operators';
 import { Store } from 'src/store/store';
 import { utc } from 'src/utils/date-time';
 import { DeepPartial } from 'src/utils/utility.types';
@@ -15,6 +19,7 @@ import { IgAuthStatus, IgState } from './models/ig-state.model';
 @Injectable()
 export class IgService {
   private readonly logger = new Logger(IgService.name);
+  private readonly followersLock = new Mutex();
 
   constructor(private ig: IgAugumentedApiClient, private store: Store) {}
 
@@ -87,6 +92,59 @@ export class IgService {
     });
 
     return feed.observable();
+  }
+
+  async followers$(
+    userId: string | number,
+  ): Promise<Observable<AccountFollowersFeedResponseUsersItem[]>> {
+    const feed = this.ig.feed.accountFollowers({
+      enableGroups: false,
+      id: userId,
+      order: 'default',
+    });
+
+    const release = await this.followersLock.acquire();
+
+    return feed
+      .observable(undefined, {
+        initialDelay: random(1_000, 3_000),
+        minDelay: 1_000,
+        maxDelay: 5_000,
+        delay: 1_000,
+      })
+      .pipe(
+        concatMap((item) => of(item).pipe(delay(random(1_000, 3_000, false)))),
+        finalize(() => {
+          release();
+        }),
+      );
+  }
+
+  async following$(
+    userId: string | number,
+  ): Promise<Observable<AccountFollowingFeedResponseUsersItem[]>> {
+    const feed = this.ig.feed.accountFollowing({
+      enableGroups: false,
+      includesHashtags: false,
+      id: userId,
+      order: 'date_followed_latest',
+    });
+
+    const release = await this.followersLock.acquire();
+
+    return feed
+      .observable(undefined, {
+        initialDelay: random(1_000, 3_000),
+        minDelay: 1_000,
+        maxDelay: 5_000,
+        delay: 1_000,
+      })
+      .pipe(
+        concatMap((item) => of(item).pipe(delay(random(1_000, 3_000, false)))),
+        finalize(() => {
+          release();
+        }),
+      );
   }
 
   async authenticate(): Promise<IgAuthStatus> {

@@ -51,6 +51,10 @@ export class ProfileDialogFactory {
                 'Add to favorites',
                 `dialog:profile:favorites:${id}`,
               ),
+              Markup.callbackButton(
+                'Followers insight',
+                `dialog:profile:followers:insight:${id}`,
+              ),
               Markup.callbackButton('Close', `dialog:profile:close:${id}`),
             ],
             { columns: 1 },

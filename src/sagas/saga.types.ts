@@ -1,75 +1,34 @@
-import { Saga } from '@prisma/client';
 import { Job } from 'bull';
-import { ReelsMediaFeedResponseItem } from 'instagram-private-api';
 import { Drop } from 'src/utils/utility.types';
+import {
+  FollowersInsightSaga,
+  FollowersInsightSagaMetadata,
+  FollowersInsightSagaStates,
+  FollowersInsightSagaType,
+} from './insight/followers/saga.insight-followers';
+import {
+  RequestStoriesSaga,
+  RequestStoriesSagaMetadata,
+  RequestStoriesSagaStates,
+  RequestStoriesSagaType,
+} from './stories/request/saga.request-stories';
 
-export const SAGA_REQUEST_STORIES = 'saga:stories:request';
+export const SAGA_PROCESS_REQUEST = 'saga:process';
 
-type _SagasCollection = {
-  ['saga:stories:request']: {
-    ['ig:get-json']: {
-      igUserId: string | number;
-      igUsername: string;
-      tgChatId: string | number;
-      userId: string;
-    };
-    ['s3:upload']: _SagasCollection['saga:stories:request']['ig:get-json'] & {
-      stories: ReelsMediaFeedResponseItem[];
-    };
-    ['tg:send']: _SagasCollection['saga:stories:request']['ig:get-json'] & {
-      bucket: string;
-      uploads: S3UploadedReel[];
-    };
-  };
-};
+export type AnySaga = RequestStoriesSaga | FollowersInsightSaga;
+export type SagaTypes = RequestStoriesSagaType | FollowersInsightSagaType;
 
-export type SagaTypes = keyof _SagasCollection;
 export type SagaType<TType extends SagaTypes> = TType;
-export type SagaStates<TType extends SagaTypes> = keyof _SagasCollection[TType];
-
-export type StoriesSagaState = keyof _SagasCollection['saga:stories:request'];
-
-type _BuildStoriesSaga<TState extends StoriesSagaState> = Drop<
-  Saga,
-  'metadata' | 'type' | 'state'
-> & {
-  state: TState;
-  type: SagaType<'saga:stories:request'>;
-  metadata: _SagasCollection['saga:stories:request'][TState];
-};
-
-export type S3UploadedReel = ReelsMediaFeedResponseItem & {
-  s3: {
-    key: string;
-    url: string;
-    presignedUrl: string;
-  };
-};
-
-// eslint-disable-next-line prettier/prettier
-export type StoriesSagaGetJson = _BuildStoriesSaga<'ig:get-json'>;
-
-// eslint-disable-next-line prettier/prettier
-export type StoriesSagaS3Upload = _BuildStoriesSaga<'s3:upload'>;
-
-// eslint-disable-next-line prettier/prettier
-export type StoriesSagaTgSend = _BuildStoriesSaga<'tg:send'>;
-
-export type StoriesSaga =
-  | StoriesSagaGetJson
-  | StoriesSagaS3Upload
-  | StoriesSagaTgSend;
-
-export type AnySaga = Drop<StoriesSaga, 'metadata'> & {
-  metadata: Record<string, any>;
-};
-
 export type SagaState<TSaga extends AnySaga> = TSaga['state'];
 export type SagaTypeBySaga<TSaga extends AnySaga> = TSaga['type'];
 export type SagaMetadata<
   TSaga extends AnySaga,
   TState extends SagaState<TSaga>
-> = _SagasCollection[SagaTypeBySaga<TSaga>][TState];
+> = TState extends RequestStoriesSagaStates
+  ? RequestStoriesSagaMetadata[TState]
+  : TState extends FollowersInsightSagaStates
+  ? FollowersInsightSagaMetadata[TState]
+  : never;
 
 export type SagaCreate<TType extends AnySaga> = Drop<
   TType,

@@ -10,13 +10,14 @@ import { ProfileDialogFactory } from './dialogs/profile.dialog.factory';
 
 export const START_SCENE = 'START_SCENE';
 
-const IG_URL_REGEXP = /^http(s)?:\/\/instagram\.com\/(?<username>[a-zA-Z0-9._]{4,})(\/)?$/i;
-const IG_MENTION_REGEXP = /^@(?<username>[a-zA-Z0-9._]{4,})/i;
-const IG_REGEXP = /^(?<username>[a-zA-Z0-9._]{4,})/i;
+const IG_URL_REGEXP = /^(http(s)?:\/\/)?instagram\.com\/(?<username>[a-zA-Z0-9._]{4,})((\/)?|\?.*)$/i;
+const IG_MENTION_REGEXP = /^@(?<username>[a-zA-Z0-9._]{4,})$/i;
+const IG_REGEXP = /^(?<username>[a-zA-Z0-9._]{4,})$/i;
 
 const ACTION_PROFILE_STORIES_REGEXP = /^dialog:profile:stories:(?<id>.+)$/i;
 const ACTION_PROFILE_CLOSE_REGEXP = /^dialog:profile:close:(?<id>.+)$/i;
 const ACTION_PROFILE_FAVORITE_REGEXP = /^dialog:profile:favorites:(?<id>.+)$/i;
+const ACTION_PROFILE_FOLLOWERS_INSIGHT_REGEXP = /^dialog:profile:followers:insight:(?<id>.+)$/i;
 
 const ACTION_FAVORITES_EXECUTE_REGEXP = /^dialog:favorites:(?<dialog>.*):(?<id>.*)$/i;
 const ACTION_FAVORITES_CLOSE_REGEXP = /^dialog:favorites:close:(?<dialog>.*)$/i;
@@ -122,6 +123,22 @@ export class StartScene {
       const dialog: ProfileDialog = profiles[id];
 
       await dialog.favorite(bot);
+      await bot.answerCbQuery();
+    }
+  }
+
+  @Action(ACTION_PROFILE_FOLLOWERS_INSIGHT_REGEXP)
+  async $followersInsight(@Ctx() bot: BotContext): Promise<void> {
+    const { router } = bot;
+    const { profiles } = router.state();
+    const { id } = bot.callbackQuery.data.match(
+      ACTION_PROFILE_FOLLOWERS_INSIGHT_REGEXP,
+    ).groups;
+
+    if (profiles && profiles[id]) {
+      const dialog: ProfileDialog = profiles[id];
+
+      await dialog.followersInsight(bot);
       await bot.answerCbQuery();
     }
   }

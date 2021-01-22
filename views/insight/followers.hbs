@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <title></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.6.13/dist/css/uikit.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/uikit@3.6.13/dist/js/uikit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/uikit@3.6.13/dist/js/uikit-icons.min.js"></script>
+
+  <style>
+    .mb-1 {
+      margin-bottom: 1px !important;
+    }
+
+    .pl-20 {
+      padding-left: 20px !important;
+    }
+
+    .pl-4 {
+      padding-left: 4px !important;
+    }
+
+    .no-shadow {
+      box-shadow: none !important;
+    }
+
+    .plr-10 {
+      padding: 0 10px !important;
+    }
+
+    .border-bottom:not(:last-child) {
+      border-bottom: 1px solid rgb(235, 235, 235);
+    }
+
+    .mt-10 {
+      margin-top: 10px !important;
+    }
+
+    .ml-5 {
+      margin-left: 5px !important;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="uk-section">
+      <div class="uk-container">
+        <div>
+          <h1 class="uk-heading-small uk-margin-remove-bottom">Followers insight 💫</h1>
+          <p class="uk-text-meta mt-10 pl-4"> Generated for <a class="uk-link-text"
+              href="https://instagram.com/{{surface.username}}">@{{surface.username}}</a> / Generated at
+            <time datetime="{{ generatedAt }}">{{ generatedAt }} UTC</time> / Expire at <time
+              datetime="{{ expireAt }}">{{ expireAt }} UTC</time>
+          </p>
+        </div>
+        {{#if surface.drift }}
+        <div class="uk-alert uk-alert-warning">⚠️ Data drift detected. Results may be inaccurate.</div>
+        {{/if }}
+        <hr>
+        <div class="uk-margin-medium-top">
+          <div>
+            <h2 class="uk-heading-bullet uk-margin-remove-bottom">Not followed by <span
+                class="uk-badge plr-10 ml-5 uk-background-secondary">{{notFollowedBy.length}} users</span></h2>
+            <p class="uk-text-meta uk-margin-remove-top pl-20">List of users @{{surface.username}} is subscribed to,
+              but who are not
+              subscribed to him/her.</p>
+          </div>
+          <div class="uk-flex uk-flex-column uk-box-shadow-small uk-border-rounded">
+            {{#each notFollowedBy}}
+            <div class="uk-card uk-card-default uk-card-header mb-1 no-shadow border-bottom">
+              <div class="uk-grid-small uk-flex-middle" uk-grid>
+                <div class="uk-width-auto">
+                  <img class="uk-border-circle" width="50" height="50" src="{{profilePicUrl}}">
+                </div>
+                <div class="uk-width-expand">
+                  <h4 class="uk-card-title uk-margin-remove-bottom">{{fullname}}</h4>
+                  <p class="uk-margin-remove-top uk-text-meta">
+                    <a class="uk-link-text" href="https://instagram.com/{{username}}"> @{{username}} </a>
+                  </p>
+                </div>
+                {{#unless seen}}
+                <div class="uk-width-auto">
+                  <span class="uk-badge plr-10 uk-align-right uk-background-secondary">new</span>
+                </div>
+                {{/unless}}
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+        <div class="uk-margin-medium-top">
+          <div>
+            <h2 class="uk-heading-bullet uk-margin-remove-bottom">Not following back<span
+                class="uk-badge plr-10 ml-5 uk-background-secondary">{{notFollowingBack.length}} users</span></h2>
+            <p class="uk-text-meta uk-margin-remove-top pl-20">List of users who subscribed to @{{surface.username}},
+              but whom he/she does not follow back.</p>
+          </div>
+          <div class="uk-flex uk-flex-column uk-box-shadow-small uk-border-rounded">
+            {{#each notFollowingBack}}
+            <div class="uk-card uk-card-default uk-card-header mb-1 no-shadow border-bottom">
+              <div class="uk-grid-small uk-flex-middle" uk-grid>
+                <div class="uk-width-auto">
+                  <img class="uk-border-circle" width="50" height="50" src="{{profilePicUrl}}">
+                </div>
+                <div class="uk-width-expand">
+                  <h4 class="uk-card-title uk-margin-remove-bottom">{{fullname}}</h4>
+                  <p class="uk-margin-remove-top uk-text-meta">
+                    <a class="uk-link-text" href="https://instagram.com/{{username}}"> @{{username}} </a>
+                  </p>
+                </div>
+                {{#unless seen}}
+                <div class="uk-width-auto">
+                  <span class="uk-badge plr-10 uk-align-right uk-background-secondary">new</span>
+                </div>
+                {{/unless}}
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
+</html>

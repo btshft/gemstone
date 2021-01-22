@@ -7,20 +7,27 @@ import { SAGA_QUEUE_NAME } from './queue/saga.queue.constants';
 import { SagaQueueProcessor } from './queue/saga.queue.processor';
 import { SagaService } from './saga.service';
 import { SagaHandlerResolver } from './queue/saga.queue.handler.resolver';
-import { IgGetJsonHandler } from './stories/request/ig-get-json.handler';
-import { S3UploadHandler } from './stories/request/s3-upload.handler';
-import { TgSendHandler } from './stories/request/tg-send.handler';
+import { IgGetJsonHandler } from './stories/request/handlers/ig-get-json.handler';
+import { S3UploadHandler } from './stories/request/handlers/s3-upload.handler';
+import { TgSendHandler } from './stories/request/handlers/tg-send.handler';
 import { IgModule } from 'src/ig/ig.module';
 import { S3Module } from 'src/s3/s3.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { IgGetFollowersHandler } from './insight/followers/handlers/ig-get-followers.handler';
+import { SendFollowersInsightHandler } from './insight/followers/handlers/send-followers-insight.handler';
+import { GenerateFollowersInsightHandler } from './insight/followers/handlers/generate-followers-insight.handler';
+import { InsightModule } from 'src/insight/insight.module';
 
 @Module({
   providers: [
     SagaQueueClient,
     SagaHandlerResolver,
-    IgGetJsonHandler,
-    S3UploadHandler,
-    TgSendHandler,
+    ...[IgGetJsonHandler, S3UploadHandler, TgSendHandler],
+    ...[
+      IgGetFollowersHandler,
+      SendFollowersInsightHandler,
+      GenerateFollowersInsightHandler,
+    ],
     SagaService,
     SagaQueueProcessor,
   ],
@@ -31,6 +38,7 @@ import { NotificationsModule } from 'src/notifications/notifications.module';
     IgModule,
     PrismaModule,
     NotificationsModule,
+    InsightModule,
     BullModule.registerQueue({
       name: SAGA_QUEUE_NAME,
     }),

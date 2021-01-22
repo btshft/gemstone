@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Saga } from '@prisma/client';
+import { GenerateFollowersInsightHandler } from '../insight/followers/handlers/generate-followers-insight.handler';
+import { IgGetFollowersHandler } from '../insight/followers/handlers/ig-get-followers.handler';
+import { SendFollowersInsightHandler } from '../insight/followers/handlers/send-followers-insight.handler';
+import { FollowersInsightSagaStates } from '../insight/followers/saga.insight-followers';
+import { SagaHandler, SagaTypes } from '../saga.types';
+import { IgGetJsonHandler } from '../stories/request/handlers/ig-get-json.handler';
+import { S3UploadHandler } from '../stories/request/handlers/s3-upload.handler';
+import { TgSendHandler } from '../stories/request/handlers/tg-send.handler';
 import {
-  SagaHandler,
-  SagaTypes,
-  StoriesSaga,
-  StoriesSagaState,
-} from '../saga.types';
-import { IgGetJsonHandler } from '../stories/request/ig-get-json.handler';
-import { S3UploadHandler } from '../stories/request/s3-upload.handler';
-import { TgSendHandler } from '../stories/request/tg-send.handler';
+  RequestStoriesSaga,
+  RequestStoriesSagaStates,
+} from '../stories/request/saga.request-stories';
 
 @Injectable()
 export class SagaHandlerResolver {
@@ -20,14 +23,16 @@ export class SagaHandlerResolver {
     switch (type) {
       case 'saga:stories:request':
         return this.resolveStoriesHandler(saga);
+      case 'saga:insight:followers':
+        return this.resolveFollowersInsightHandler(saga);
       default:
         throw new Error(`Unknown saga type '${type}'`);
     }
   }
 
   // eslint-disable-next-line prettier/prettier
-  private resolveStoriesHandler(saga: Readonly<Saga>): SagaHandler<StoriesSaga> {
-    const state = <StoriesSagaState>saga.state;
+  private resolveStoriesHandler(saga: Readonly<Saga>): SagaHandler<RequestStoriesSaga> {
+    const state = <RequestStoriesSagaStates>saga.state;
     switch (state) {
       case 'ig:get-json':
         return this.moduleRef.get(IgGetJsonHandler);
@@ -35,6 +40,22 @@ export class SagaHandlerResolver {
         return this.moduleRef.get(S3UploadHandler);
       case 'tg:send':
         return this.moduleRef.get(TgSendHandler);
+      default:
+        throw new Error(`Unknown saga state '${state}'`);
+    }
+  }
+
+  private resolveFollowersInsightHandler(
+    saga: Readonly<Saga>,
+  ): SagaHandler<RequestStoriesSaga> {
+    const state = <FollowersInsightSagaStates>saga.state;
+    switch (state) {
+      case 'ig:followers:get':
+        return this.moduleRef.get(IgGetFollowersHandler);
+      case 'insight:followers:generate':
+        return this.moduleRef.get(GenerateFollowersInsightHandler);
+      case 'insight:followers:send':
+        return this.moduleRef.get(SendFollowersInsightHandler);
       default:
         throw new Error(`Unknown saga state '${state}'`);
     }

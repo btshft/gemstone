@@ -1,17 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ReelsMediaFeedResponseItem } from 'instagram-private-api';
 import { IgService } from 'src/ig/ig.service';
+import { SagaHandler } from 'src/sagas/saga.types';
 import { iterator } from 'src/utils/observable.async-iterator';
-import { SagaService } from '../../saga.service';
-import { SagaHandler, StoriesSaga, StoriesSagaGetJson } from '../../saga.types';
+import { SagaService } from '../../../saga.service';
+import {
+  RequestStoriesSaga,
+  RequestStoriesSagaGetJson,
+} from '../saga.request-stories';
 
 @Injectable()
-export class IgGetJsonHandler implements SagaHandler<StoriesSagaGetJson> {
+// eslint-disable-next-line prettier/prettier
+export class IgGetJsonHandler implements SagaHandler<RequestStoriesSagaGetJson> {
   private readonly logger = new Logger(IgGetJsonHandler.name);
 
   constructor(private sagaService: SagaService, private ig: IgService) {}
 
-  async handle(saga: StoriesSagaGetJson): Promise<void> {
+  async handle(saga: RequestStoriesSagaGetJson): Promise<void> {
     const { metadata } = saga;
     const stories$ = this.ig.stories$(metadata.igUserId);
 
@@ -26,7 +31,7 @@ export class IgGetJsonHandler implements SagaHandler<StoriesSagaGetJson> {
       count: stories.length,
     });
 
-    await this.sagaService.move<StoriesSaga>(saga.id, 's3:upload', {
+    await this.sagaService.move<RequestStoriesSaga>(saga.id, 's3:upload', {
       ...metadata,
       stories: stories,
     });

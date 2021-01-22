@@ -49,4 +49,12 @@ export class ProfileDialog {
   async stories(bot: BotContext): Promise<void> {
     await this.requester.requestStories(bot, this.userId, this.username);
   }
+
+  async followersInsight(bot: BotContext): Promise<void> {
+    await this.requester.requestFollowersInsight(
+      bot,
+      this.userId,
+      this.username,
+    );
+  }
 }

@@ -1,18 +1,15 @@
-import { Process, Processor } from '@nestjs/bull';
+import { OnQueueEvent, Process, Processor } from '@nestjs/bull';
 import { ResourceLock } from 'src/utils/resource-locker';
 import { SAGA_QUEUE_NAME } from './saga.queue.constants';
-import {
-  SagaJob,
-  SagaTypes,
-  SAGA_REQUEST_STORIES,
-  StoriesSaga,
-} from '../saga.types';
+import { SagaJob, SagaTypes, SAGA_PROCESS_REQUEST } from '../saga.types';
 import { SagaHandlerResolver } from './saga.queue.handler.resolver';
 import { SagaService } from '../saga.service';
 import { Prisma } from 'src/database/services/prisma';
 import { Logger } from '@nestjs/common';
 import { OutboxWriter } from 'src/outbox/outbox.writer';
 import { Saga } from '@prisma/client';
+import { RequestStoriesSaga } from '../stories/request/saga.request-stories';
+import { FollowersInsightSaga } from '../insight/followers/saga.insight-followers';
 
 @Processor(SAGA_QUEUE_NAME)
 export class SagaQueueProcessor {
@@ -26,8 +23,14 @@ export class SagaQueueProcessor {
     private outbox: OutboxWriter,
   ) {}
 
-  @Process(SAGA_REQUEST_STORIES)
-  async stories(job: SagaJob<'saga:stories:request'>): Promise<void> {
+  @Process(SAGA_PROCESS_REQUEST)
+  async stories(job: SagaJob<SagaTypes>): Promise<void> {
+    if (job.failedReason) {
+      throw new Error(
+        `Job ${job.name} of queue ${job.queue} failed with reason ${job.failedReason}`,
+      );
+    }
+
     const saga = await this.prisma.saga.findUnique({
       where: {
         id: job.data.sagaId,
@@ -66,6 +69,7 @@ export class SagaQueueProcessor {
 
       if (!updatedSaga.completedAt && !updatedSaga.faultedAt)
         await this.sagaService.process(saga.id);
+      //
     } catch (err) {
       this.logger.error({
         message: 'Saga failure',
@@ -88,13 +92,26 @@ export class SagaQueueProcessor {
     try {
       const type = <SagaTypes>saga.type;
       if (type === 'saga:stories:request') {
-        const storiesSaga = <StoriesSaga>saga;
+        const storiesSaga = <RequestStoriesSaga>saga;
         if (storiesSaga.metadata) {
           await this.outbox.write<'outbox:notification'>({
             type: 'outbox:notification',
             value: {
               chatId: storiesSaga.metadata.tgChatId,
               text: `I failed to get @${storiesSaga.metadata.igUsername} stories due to an error 😥`,
+            },
+          });
+        }
+      }
+
+      if (type === 'saga:insight:followers') {
+        const insightSaga = <FollowersInsightSaga>saga;
+        if (insightSaga.metadata) {
+          await this.outbox.write<'outbox:notification'>({
+            type: 'outbox:notification',
+            value: {
+              chatId: insightSaga.metadata.tgChatId,
+              text: `I failed to generate followers insight for @${insightSaga.metadata.igUsername} due to an error 😥`,
             },
           });
         }

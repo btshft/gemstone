@@ -6,7 +6,7 @@ import {
   SAGA_QUEUE_REPROCESS_ATTEMPTS,
   SAGA_QUEUE_REPROCESS_DELAY_MS,
 } from './saga.queue.constants';
-import { SagaJobPayload, SagaTypes } from '../saga.types';
+import { SagaJobPayload, SagaTypes, SAGA_PROCESS_REQUEST } from '../saga.types';
 
 @Injectable()
 export class SagaQueueClient {
@@ -16,7 +16,7 @@ export class SagaQueueClient {
   ) {}
 
   async send(request: SagaJobPayload<SagaTypes>): Promise<void> {
-    await this.queue.add(request.type, request, {
+    await this.queue.add(SAGA_PROCESS_REQUEST, request, {
       removeOnComplete: true,
       attempts: SAGA_QUEUE_REPROCESS_ATTEMPTS,
       backoff: <BackoffOptions>{

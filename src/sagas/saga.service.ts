@@ -21,7 +21,7 @@ export class SagaService {
     const { id } = await this.prisma.saga.create({
       data: {
         state: <string>request.state,
-        metadata: request.metadata,
+        metadata: <any>request.metadata,
         type: request.type,
         createdAt: utc(),
         activityId: request.activityId,
@@ -64,7 +64,6 @@ export class SagaService {
     });
 
     if (!saga) throw new Error(`Saga '${sagaId}' not found`);
-
     await this.prisma.saga.update({
       where: {
         id: saga.id,

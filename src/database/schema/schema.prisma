@@ -83,3 +83,41 @@ model Saga {
 
   @@index([initiatorId, activityId])
 }
+
+
+model IgUser {
+  id String @id @default(uuid())
+  pk String @unique
+  username String
+  profilePicUrl String?
+  fullname String?
+  createdAt DateTime @default(now())
+  followed IgUser[] @relation("follows", references: [id])
+  following IgUser[] @relation("follows", references: [id])
+}
+
+enum InsightType {
+  Followers
+}
+
+model Insight {
+  id String @id @default(uuid())
+  createdAt DateTime @default(now())
+  groupId String
+  type InsightType
+  initiatorId String?
+  expiration DateTime?
+  content Json
+  tokens InsightAccessToken[]
+  initiator User? @relation(fields: [initiatorId], references: [id])
+
+  @@index([groupId, expiration, initiatorId])
+}
+
+model InsightAccessToken {
+  id String @id @default(uuid())
+  token String @unique
+  insightId String
+  expiration DateTime?
+  insight Insight @relation(fields: [insightId], references: [id])
+}

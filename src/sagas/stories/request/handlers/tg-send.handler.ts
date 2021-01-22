@@ -4,6 +4,7 @@ import { InjectBot } from 'nestjs-telegraf';
 import { BotContext } from 'src/bot/bot.context';
 import { Prisma } from 'src/database/services/prisma';
 import { S3 } from 'src/s3/s3';
+import { SagaHandler } from 'src/sagas/saga.types';
 import { indexed } from 'src/utils/helpers';
 import Telegraf from 'telegraf';
 import {
@@ -12,18 +13,17 @@ import {
   InputMediaVideo,
   MessageMedia,
 } from 'telegraf/typings/telegram-types';
-import { SagaService } from '../../saga.service';
+import { SagaService } from '../../../saga.service';
 import {
+  RequestStoriesSagaTgSend,
   S3UploadedReel,
-  SagaHandler,
-  StoriesSagaTgSend,
-} from '../../saga.types';
+} from '../saga.request-stories';
 
 const MAX_ALBUM_SIZE = 10;
 const VIDEO_MEDIA_TYPE = 2;
 
 @Injectable()
-export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
+export class TgSendHandler implements SagaHandler<RequestStoriesSagaTgSend> {
   private readonly logger = new Logger(TgSendHandler.name);
 
   constructor(
@@ -58,7 +58,7 @@ export class TgSendHandler implements SagaHandler<StoriesSagaTgSend> {
     }, []);
   }
 
-  async handle(saga: StoriesSagaTgSend): Promise<void> {
+  async handle(saga: RequestStoriesSagaTgSend): Promise<void> {
     const { metadata } = saga;
     const { tgChatId, uploads } = metadata;
 

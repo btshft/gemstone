@@ -4,6 +4,11 @@
     "[typescript]": {
         "editor.defaultFormatter": "vscode.typescript-language-features"
     },
+    "[handlebars]": {
+        "editor.suggest.insertMode": "replace",
+        "editor.defaultFormatter": "vscode.html-language-features",
+        "editor.formatOnSave": true
+    },
     "eslint.lintTask.enable": true,
     "eslint.format.enable": true,
     "eslint.packageManager": "yarn",
