@@ -17,6 +17,12 @@ export class NotificationsQueueProcessor {
 
   @Process()
   async handle(job: Job<UserNotification>): Promise<void> {
+    if (job.failedReason) {
+      throw new Error(
+        `Job ${job.name} of queue ${job.queue} failed with reason ${job.failedReason}`,
+      );
+    }
+
     const { chatId, text, markup } = job.data;
     try {
       await this.bot.telegram.sendMessage(chatId, text, markup);

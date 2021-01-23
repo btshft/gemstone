@@ -1,4 +1,4 @@
-import { OnQueueEvent, Process, Processor } from '@nestjs/bull';
+import { Process, Processor } from '@nestjs/bull';
 import { ResourceLock } from 'src/utils/resource-locker';
 import { SAGA_QUEUE_NAME } from './saga.queue.constants';
 import { SagaJob, SagaTypes, SAGA_PROCESS_REQUEST } from '../saga.types';

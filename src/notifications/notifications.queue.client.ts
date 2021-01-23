@@ -18,6 +18,7 @@ export class NotificationsQueueClient {
   async send(notification: UserNotification): Promise<void> {
     await this.queue.add(notification, {
       removeOnComplete: true,
+      removeOnFail: true,
       attempts: NOTIFICATIONS_QUEUE_REPROCESS_ATTEMPTS,
       backoff: <BackoffOptions>{
         type: 'exponential',
