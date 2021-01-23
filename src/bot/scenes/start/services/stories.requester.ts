@@ -84,7 +84,7 @@ export class StoriesRequester {
     });
 
     await bot.reply(
-      `Roger that!\nI'm switching gears to get @${username} followers insight. Will notify you soon ⚡️`,
+      `Roger that!\nI'm going to switch gears and get @${username} followers insight for you as soon as possible. Will notify you soon ⚡️`,
     );
   }
 
