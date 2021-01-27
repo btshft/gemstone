@@ -28,11 +28,11 @@ export class AdministrationScene {
     const { ui } = ctx;
     const message = `Select option`;
     const buttons = [
-      Markup.callbackButton('Login', ACTIONS.Login),
-      Markup.callbackButton('Challenge', ACTIONS.Challenge),
-      Markup.callbackButton('State', ACTIONS.State),
-      Markup.callbackButton('Issue token', ACTIONS.IssueToken),
-      Markup.callbackButton('Back', ACTIONS.Back),
+      Markup.button.callback('Login', ACTIONS.Login),
+      Markup.button.callback('Challenge', ACTIONS.Challenge),
+      Markup.button.callback('State', ACTIONS.State),
+      Markup.button.callback('Issue token', ACTIONS.IssueToken),
+      Markup.button.callback('Back', ACTIONS.Back),
     ];
 
     await ui.render(message, Markup.inlineKeyboard(buttons, { columns: 2 }));

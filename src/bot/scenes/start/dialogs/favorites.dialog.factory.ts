@@ -2,11 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { BotContext } from 'src/bot/bot.context';
 import { FavoritesService } from 'src/favorites/favorites.service';
 import { indexed } from 'src/utils/helpers';
-import { Extra } from 'telegraf';
-import { Markup } from 'telegraf';
-import { InlineKeyboardButton } from 'telegraf/typings/markup';
 import { FavoritesDialog } from './favorites.dialog';
 import { StoriesRequester } from '../services/stories.requester';
+import { InlineKeyboardButton } from 'telegraf/typings/telegram-types';
+import { Markup } from 'telegraf';
 
 @Injectable()
 export class FavoritesDialogFactory {
@@ -34,7 +33,7 @@ export class FavoritesDialogFactory {
     const buttons: InlineKeyboardButton[] = [];
     for (const { value: favorite } of indexed(favorites)) {
       buttons.push(
-        Markup.callbackButton(
+        Markup.button.callback(
           favorite.alias,
           `dialog:favorites:${dialogId}:${favorite.id}`,
         ),
@@ -42,7 +41,7 @@ export class FavoritesDialogFactory {
     }
 
     buttons.push(
-      Markup.callbackButton('Close', `dialog:favorites:close:${dialogId}`),
+      Markup.button.callback('Close', `dialog:favorites:close:${dialogId}`),
     );
 
     const wh = bot.telegram.webhookReply;
@@ -52,7 +51,7 @@ export class FavoritesDialogFactory {
 
       const { message_id } = await bot.reply(
         "Here's your favorites 🍋",
-        Extra.markup(Markup.inlineKeyboard(buttons, { columns: 1 }).resize()),
+        Markup.inlineKeyboard(buttons, { columns: 1 }),
       );
 
       return new FavoritesDialog(

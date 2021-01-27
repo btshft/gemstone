@@ -6,12 +6,11 @@ import { Prisma } from 'src/database/services/prisma';
 import { S3 } from 'src/s3/s3';
 import { SagaHandler } from 'src/sagas/saga.types';
 import { indexed } from 'src/utils/helpers';
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import {
   InputFileByURL,
   InputMediaPhoto,
   InputMediaVideo,
-  MessageMedia,
 } from 'telegraf/typings/telegram-types';
 import { SagaService } from '../../../saga.service';
 import {
@@ -33,10 +32,12 @@ export class TgSendHandler implements SagaHandler<RequestStoriesSagaTgSend> {
     private s3: S3,
   ) {}
 
-  private toMediaGroup(chunk: S3UploadedReel[]): MessageMedia[] {
-    return chunk.reduce<MessageMedia[]>((m, v) => {
+  private toMediaGroup(
+    chunk: S3UploadedReel[],
+  ): Array<InputMediaPhoto | InputMediaVideo> {
+    return chunk.reduce<(InputMediaPhoto | InputMediaVideo)[]>((m, v) => {
       const isVideo = v.media_type === VIDEO_MEDIA_TYPE;
-      const media: MessageMedia = isVideo
+      const media: InputMediaPhoto | InputMediaVideo = isVideo
         ? <InputMediaVideo>{
             media: {
               url: v.s3.presignedUrl,

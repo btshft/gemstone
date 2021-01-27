@@ -1,12 +1,11 @@
-import { Markup } from 'telegraf';
-import { MiddlewareFn } from 'telegraf/typings/composer';
-import { InlineKeyboardButton } from 'telegraf/typings/markup';
+import { Markup, MiddlewareFn } from 'telegraf';
 import {
   InlineKeyboardMarkup,
   ReplyKeyboardMarkup,
   ReplyKeyboardRemove,
   ExtraReplyMessage,
-  ExtraEditMessage,
+  InlineKeyboardButton,
+  ExtraEditMessageText,
 } from 'telegraf/typings/telegram-types';
 import { BotContext } from '../bot.context';
 
@@ -42,7 +41,9 @@ export class DialogUi {
 
   async popup(message: string): Promise<void> {
     try {
-      await this.bot.answerCbQuery(message, true);
+      await this.bot.answerCbQuery(message, {
+        show_alert: true,
+      });
     } catch {}
   }
 
@@ -181,7 +182,7 @@ export class DialogUi {
 
   // eslint-disable-next-line prettier/prettier
   private async $update(handle: number, message: string, markup: InlineKeyboardMarkup, options?: DialogOptions): Promise<number> {
-    const extra: ExtraEditMessage = {
+    const extra: ExtraEditMessageText = {
       disable_notification: true,
       disable_web_page_preview: true,
       reply_markup: markup,
@@ -206,13 +207,13 @@ export class DialogUi {
   }
 
   private resolve(markup?: DialogMarkup): InlineKeyboardMarkup {
-    if (!markup) return Markup.inlineKeyboard([]);
+    if (!markup) Markup.inlineKeyboard([]).reply_markup;
 
     return 'inline_keyboard' in markup
       ? <InlineKeyboardMarkup>markup
       : 'reply_markup' in markup
       ? <InlineKeyboardMarkup>markup.reply_markup
-      : Markup.inlineKeyboard(markup);
+      : Markup.inlineKeyboard(markup).reply_markup;
   }
 
   private state(update?: Partial<DialogState>) {

@@ -4,7 +4,7 @@ import { BotContext } from 'src/bot/bot.context';
 import { FollowersInsight } from 'src/insight/insight.followers.service';
 import { SagaService } from 'src/sagas/saga.service';
 import { SagaHandler } from 'src/sagas/saga.types';
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { FollowersInsightSagaSend } from '../saga.insight-followers';
 
 @Injectable()

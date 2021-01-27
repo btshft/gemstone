@@ -1,6 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Action, Ctx, Hears, Scene } from 'nestjs-telegraf';
-import { BotContext } from 'src/bot/bot.context';
+import { BotContext, cbQuery, message } from 'src/bot/bot.context';
 import { Role } from 'src/bot/security/bot.role.guard';
 import { ADMINISTRATION_SCENE } from '../administration/administration.scene';
 import { FavoritesDialog } from './dialogs/favorites.dialog';
@@ -53,7 +53,7 @@ export class StartScene {
   @Hears(IG_MENTION_REGEXP)
   async $hears_mention(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
-    const { username } = bot.message.text.match(IG_MENTION_REGEXP).groups;
+    const { username } = message(bot).text.match(IG_MENTION_REGEXP).groups;
     const dialog = await this.profileDialog.create(bot, username);
 
     if (dialog) {
@@ -68,7 +68,7 @@ export class StartScene {
   @Hears(IG_URL_REGEXP)
   async $hears_url(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
-    const { username } = bot.message.text.match(IG_URL_REGEXP).groups;
+    const { username } = message(bot).text.match(IG_URL_REGEXP).groups;
     const dialog = await this.profileDialog.create(bot, username);
 
     if (dialog) {
@@ -83,7 +83,7 @@ export class StartScene {
   @Hears(IG_REGEXP)
   async $hears_username(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
-    const { username } = bot.message.text.match(IG_REGEXP).groups;
+    const { username } = message(bot).text.match(IG_REGEXP).groups;
     const dialog = await this.profileDialog.create(bot, username);
 
     if (dialog) {
@@ -99,7 +99,7 @@ export class StartScene {
   async $stories(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
     const { profiles } = router.state();
-    const { id } = bot.callbackQuery.data.match(
+    const { id } = cbQuery(bot).data.match(
       ACTION_PROFILE_STORIES_REGEXP,
     ).groups;
 
@@ -115,7 +115,7 @@ export class StartScene {
   async $favorite(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
     const { profiles } = router.state();
-    const { id } = bot.callbackQuery.data.match(
+    const { id } = cbQuery(bot).data.match(
       ACTION_PROFILE_FAVORITE_REGEXP,
     ).groups;
 
@@ -131,7 +131,7 @@ export class StartScene {
   async $followersInsight(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
     const { profiles } = router.state();
-    const { id } = bot.callbackQuery.data.match(
+    const { id } = cbQuery(bot).data.match(
       ACTION_PROFILE_FOLLOWERS_INSIGHT_REGEXP,
     ).groups;
 
@@ -147,9 +147,7 @@ export class StartScene {
   async $close(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
     const { profiles } = router.state();
-    const { id } = bot.callbackQuery.data.match(
-      ACTION_PROFILE_CLOSE_REGEXP,
-    ).groups;
+    const { id } = cbQuery(bot).data.match(ACTION_PROFILE_CLOSE_REGEXP).groups;
 
     if (profiles && profiles[id]) {
       const dialog: ProfileDialog = profiles[id];
@@ -165,7 +163,7 @@ export class StartScene {
   async $closeFavorite(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
     const { favorites } = router.state();
-    const { dialog } = bot.callbackQuery.data.match(
+    const { dialog } = cbQuery(bot).data.match(
       ACTION_FAVORITES_CLOSE_REGEXP,
     ).groups;
 
@@ -182,7 +180,7 @@ export class StartScene {
   async $executeFavorite(@Ctx() bot: BotContext): Promise<void> {
     const { router } = bot;
     const { favorites } = router.state();
-    const { id, dialog } = bot.callbackQuery.data.match(
+    const { id, dialog } = cbQuery(bot).data.match(
       ACTION_FAVORITES_EXECUTE_REGEXP,
     ).groups;
 

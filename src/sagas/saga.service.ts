@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { JsonObject } from '@prisma/client';
 import { Prisma } from 'src/database/services/prisma';
 import { OutboxWriter } from 'src/outbox/outbox.writer';
 import { utc } from 'src/utils/date-time';
@@ -97,7 +96,7 @@ export class SagaService {
       },
       data: {
         state: state,
-        metadata: <JsonObject>metadata,
+        metadata: <any>metadata,
         transitionAt: utc(),
       },
     });

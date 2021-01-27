@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RoleName } from '@prisma/client';
 import { isArray } from 'lodash';
-import { InlineKeyboardButton } from 'telegraf/typings/markup';
+import { InlineKeyboardButton } from 'telegraf/typings/telegram-types';
 import { BotContext } from '../bot.context';
 
 type _BuilderStage = (

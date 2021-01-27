@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { InjectBot } from 'nestjs-telegraf';
 import { BotContext } from 'src/bot/bot.context';
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import {
   NOTIFICATIONS_QUEUE_NAME,
   UserNotification,

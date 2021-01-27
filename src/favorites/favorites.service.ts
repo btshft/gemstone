@@ -38,6 +38,8 @@ export class FavoritesService {
   constructor(private readonly prisma: Prisma) {}
 
   async getById(id: string): Promise<AnyFavorite> {
+    if (!id) throw new Error('Id not defined');
+
     return <any>await this.prisma.favorite.findUnique({
       where: {
         id: id,
@@ -91,6 +93,8 @@ export class FavoritesService {
   }
 
   async delete(id: string): Promise<void> {
+    if (!id) throw new Error('Id not defined');
+
     await this.prisma.favorite.delete({
       where: {
         id: id,
@@ -99,6 +103,8 @@ export class FavoritesService {
   }
 
   async get(userId: string): Promise<AnyFavorite[]> {
+    if (!userId) throw new Error('User id not defined');
+
     const result = await this.prisma.favorite.findMany({
       where: {
         userId: userId,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InputJsonObject, Outbox } from '@prisma/client';
+import { Outbox } from '@prisma/client';
 import { Prisma } from 'src/database/services/prisma';
 import { OutboxMetadata, OutboxTyped, OutboxTypes } from './outbox.types';
 
@@ -13,7 +13,7 @@ export class OutboxWriter {
   ): Promise<Outbox> {
     return await this.prisma.outbox.create({
       data: {
-        content: <InputJsonObject>outbox,
+        content: <any>outbox,
         metadata: metadata || {},
       },
     });

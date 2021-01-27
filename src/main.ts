@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { getBotToken } from 'nestjs-telegraf';
 import { join } from 'path';
-import Telegraf from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { AppModule } from './app.module';
 
 async function bootstrap() {

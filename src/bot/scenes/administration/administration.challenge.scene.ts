@@ -38,8 +38,8 @@ export class AdministrationChallengeScene {
     });
 
     await ui.render('Select start to begin challenge process', [
-      Markup.callbackButton('Start', ACTIONS.Start),
-      Markup.callbackButton('Back', ACTIONS.Back),
+      Markup.button.callback('Start', ACTIONS.Start),
+      Markup.button.callback('Back', ACTIONS.Back),
     ]);
   }
 
@@ -49,8 +49,8 @@ export class AdministrationChallengeScene {
     const started = await this.ig.startChallenge();
     if (!started) {
       await ui.render('Unable to start challenge procedure', [
-        Markup.callbackButton('Retry', ACTIONS.Retry),
-        Markup.callbackButton('Back', ACTIONS.Back),
+        Markup.button.callback('Retry', ACTIONS.Retry),
+        Markup.button.callback('Back', ACTIONS.Back),
       ]);
     } else {
       router.state<ChallengeState>({
@@ -58,7 +58,7 @@ export class AdministrationChallengeScene {
       });
 
       await ui.render('Enter code below', [
-        Markup.callbackButton('Back', ACTIONS.Back),
+        Markup.button.callback('Back', ACTIONS.Back),
       ]);
     }
   }
@@ -77,8 +77,8 @@ export class AdministrationChallengeScene {
         await router.return();
       } else {
         await ui.render('Unable to complete challenge procedure', [
-          Markup.callbackButton('Retry', ACTIONS.Retry),
-          Markup.callbackButton('Back', ACTIONS.Back),
+          Markup.button.callback('Retry', ACTIONS.Retry),
+          Markup.button.callback('Back', ACTIONS.Back),
         ]);
       }
     }

@@ -26,7 +26,7 @@ export class AdministrationStateScene {
       2,
     )}</code>`;
 
-    const buttons = [Markup.callbackButton('Back', ACTIONS.Back)];
+    const buttons = [Markup.button.callback('Back', ACTIONS.Back)];
     await ui.render(message, buttons, { parse_mode: 'HTML' });
   }
 

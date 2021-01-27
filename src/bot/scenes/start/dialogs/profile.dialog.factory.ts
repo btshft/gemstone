@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { BotContext } from 'src/bot/bot.context';
 import { FavoritesService } from 'src/favorites/favorites.service';
 import { IgService } from 'src/ig/ig.service';
-import { Extra } from 'telegraf';
-import { Markup } from 'telegraf';
 import { ProfileDialog } from './profile.dialog';
 import { StoriesRequester } from '../services/stories.requester';
+import { Markup } from 'telegraf';
 
 @Injectable()
 export class ProfileDialogFactory {
@@ -43,22 +42,20 @@ export class ProfileDialogFactory {
       bot.telegram.webhookReply = false;
       const { message_id } = await bot.reply(
         `What you want to do with @${username}? 😈`,
-        Extra.markup(
-          Markup.inlineKeyboard(
-            [
-              Markup.callbackButton('Stories', `dialog:profile:stories:${id}`),
-              Markup.callbackButton(
-                'Add to favorites',
-                `dialog:profile:favorites:${id}`,
-              ),
-              Markup.callbackButton(
-                'Followers insight',
-                `dialog:profile:followers:insight:${id}`,
-              ),
-              Markup.callbackButton('Close', `dialog:profile:close:${id}`),
-            ],
-            { columns: 1 },
-          ).resize(),
+        Markup.inlineKeyboard(
+          [
+            Markup.button.callback('Stories', `dialog:profile:stories:${id}`),
+            Markup.button.callback(
+              'Add to favorites',
+              `dialog:profile:favorites:${id}`,
+            ),
+            Markup.button.callback(
+              'Followers insight',
+              `dialog:profile:followers:insight:${id}`,
+            ),
+            Markup.button.callback('Close', `dialog:profile:close:${id}`),
+          ],
+          { columns: 1 },
         ),
       );
 

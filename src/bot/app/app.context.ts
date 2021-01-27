@@ -1,6 +1,6 @@
 import { RoleName, User } from '@prisma/client';
 import { Prisma } from 'src/database/services/prisma';
-import { MiddlewareFn } from 'telegraf/typings/composer';
+import { MiddlewareFn } from 'telegraf';
 import { BotContext } from '../bot.context';
 
 type UserType = User & {

@@ -1,6 +1,6 @@
 import { reverse } from 'src/utils/helpers';
 import { TObject } from 'src/utils/utility.types';
-import { MiddlewareFn } from 'telegraf/typings/composer';
+import { MiddlewareFn } from 'telegraf';
 import { BotContext } from '../bot.context';
 
 export type ReturnOptions = {

@@ -1,5 +1,5 @@
 import { SagaTypes } from 'src/sagas/saga.types';
-import { ExtraEditMessage } from 'telegraf/typings/telegram-types';
+import { ExtraEditMessageText } from 'telegraf/typings/telegram-types';
 
 type Empty = Record<string, any>;
 type Outboxes = {
@@ -14,7 +14,7 @@ type Outboxes = {
     value: {
       text: string;
       chatId: string | number;
-      markup?: ExtraEditMessage;
+      markup?: ExtraEditMessageText;
     };
     metadata: Empty;
   };

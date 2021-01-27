@@ -1,6 +1,6 @@
 import { interpret, createMachine, Service } from 'robot3';
 import { TObject } from 'src/utils/utility.types';
-import { MiddlewareFn } from 'telegraf/typings/composer';
+import { MiddlewareFn } from 'telegraf';
 import { BotContext } from '../bot.context';
 import { MachineStates, StateActivator, useActivator } from './fsm.core';
 
