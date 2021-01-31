@@ -10,6 +10,7 @@ import { OutboxWriter } from 'src/outbox/outbox.writer';
 import { Saga } from '@prisma/client';
 import { RequestStoriesSaga } from '../stories/request/saga.request-stories';
 import { FollowersInsightSaga } from '../insight/followers/saga.insight-followers';
+import { TtSaga } from '../tt/saga.tt';
 
 @Processor(SAGA_QUEUE_NAME)
 export class SagaQueueProcessor {
@@ -74,7 +75,7 @@ export class SagaQueueProcessor {
       this.logger.error({
         message: 'Saga failure',
         id: saga.id,
-        reasong: err.message || JSON.stringify(err),
+        reason: err.message || JSON.stringify(err),
       });
 
       await this.sagaService.complete(
@@ -112,6 +113,19 @@ export class SagaQueueProcessor {
             value: {
               chatId: insightSaga.metadata.tgChatId,
               text: `I failed to generate followers insight for @${insightSaga.metadata.igUsername} due to an error 😥`,
+            },
+          });
+        }
+      }
+
+      if (type === 'saga:tt:request') {
+        const ttSaga = <TtSaga>saga;
+        if (ttSaga.metadata) {
+          await this.outbox.write<'outbox:notification'>({
+            type: 'outbox:notification',
+            value: {
+              chatId: ttSaga.metadata.tgChatId,
+              text: `I failed to download tiktok due to an error 😥`,
             },
           });
         }

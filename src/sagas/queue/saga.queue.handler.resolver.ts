@@ -13,6 +13,9 @@ import {
   RequestStoriesSaga,
   RequestStoriesSagaStates,
 } from '../stories/request/saga.request-stories';
+import { TtS3UploadHandler } from '../tt/handlers/tt.s3-upload.handler';
+import { TtTgSendHandler } from '../tt/handlers/tt.tg-send.handler';
+import { TtSagaStates } from '../tt/saga.tt';
 
 @Injectable()
 export class SagaHandlerResolver {
@@ -25,6 +28,8 @@ export class SagaHandlerResolver {
         return this.resolveStoriesHandler(saga);
       case 'saga:insight:followers':
         return this.resolveFollowersInsightHandler(saga);
+      case 'saga:tt:request':
+        return this.resolveTtHandler(saga);
       default:
         throw new Error(`Unknown saga type '${type}'`);
     }
@@ -56,6 +61,18 @@ export class SagaHandlerResolver {
         return this.moduleRef.get(GenerateFollowersInsightHandler);
       case 'insight:followers:send':
         return this.moduleRef.get(SendFollowersInsightHandler);
+      default:
+        throw new Error(`Unknown saga state '${state}'`);
+    }
+  }
+
+  private resolveTtHandler(saga: Readonly<Saga>) {
+    const state = <TtSagaStates>saga.state;
+    switch (state) {
+      case 'tt:s3:upload':
+        return this.moduleRef.get(TtS3UploadHandler);
+      case 'tt:tg:send':
+        return this.moduleRef.get(TtTgSendHandler);
       default:
         throw new Error(`Unknown saga state '${state}'`);
     }

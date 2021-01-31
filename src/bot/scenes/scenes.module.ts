@@ -15,6 +15,8 @@ import { StartScene } from './start/start.scene';
 import { FavoritesDialogFactory } from './start/dialogs/favorites.dialog.factory';
 import { StoriesRequester } from './start/services/stories.requester';
 import { InsightModule } from 'src/insight/insight.module';
+import { TtModule } from 'src/tt/tt.module';
+import { TtRequester } from './start/services/tt.requester';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { InsightModule } from 'src/insight/insight.module';
     UserModule,
     FavoritesModule,
     InsightModule,
+    TtModule,
   ],
   providers: [
     StartScene,
@@ -35,6 +38,7 @@ import { InsightModule } from 'src/insight/insight.module';
     ProfileDialogFactory,
     FavoritesDialogFactory,
     StoriesRequester,
+    TtRequester,
   ],
 })
 export class ScenesModule {}

@@ -17,6 +17,9 @@ import { IgGetFollowersHandler } from './insight/followers/handlers/ig-get-follo
 import { SendFollowersInsightHandler } from './insight/followers/handlers/send-followers-insight.handler';
 import { GenerateFollowersInsightHandler } from './insight/followers/handlers/generate-followers-insight.handler';
 import { InsightModule } from 'src/insight/insight.module';
+import { TtModule } from 'src/tt/tt.module';
+import { TtS3UploadHandler } from './tt/handlers/tt.s3-upload.handler';
+import { TtTgSendHandler } from './tt/handlers/tt.tg-send.handler';
 
 @Module({
   providers: [
@@ -28,6 +31,7 @@ import { InsightModule } from 'src/insight/insight.module';
       SendFollowersInsightHandler,
       GenerateFollowersInsightHandler,
     ],
+    ...[TtS3UploadHandler, TtTgSendHandler],
     SagaService,
     SagaQueueProcessor,
   ],
@@ -36,6 +40,7 @@ import { InsightModule } from 'src/insight/insight.module';
     forwardRef(() => OutboxModule),
     S3Module,
     IgModule,
+    TtModule,
     PrismaModule,
     NotificationsModule,
     InsightModule,

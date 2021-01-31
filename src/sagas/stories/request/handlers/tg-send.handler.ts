@@ -3,7 +3,6 @@ import { chunk, orderBy } from 'lodash';
 import { InjectBot } from 'nestjs-telegraf';
 import { BotContext } from 'src/bot/bot.context';
 import { Prisma } from 'src/database/services/prisma';
-import { S3 } from 'src/s3/s3';
 import { SagaHandler } from 'src/sagas/saga.types';
 import { indexed } from 'src/utils/helpers';
 import { Telegraf } from 'telegraf';
@@ -29,7 +28,6 @@ export class TgSendHandler implements SagaHandler<RequestStoriesSagaTgSend> {
     private sagaService: SagaService,
     @InjectBot() private bot: Telegraf<BotContext>,
     private prisma: Prisma,
-    private s3: S3,
   ) {}
 
   private toMediaGroup(

@@ -2,11 +2,13 @@ import { UseGuards } from '@nestjs/common';
 import { Action, Ctx, Hears, Scene } from 'nestjs-telegraf';
 import { BotContext, cbQuery, message } from 'src/bot/bot.context';
 import { Role } from 'src/bot/security/bot.role.guard';
+import { TtService } from 'src/tt/tt.service';
 import { ADMINISTRATION_SCENE } from '../administration/administration.scene';
 import { FavoritesDialog } from './dialogs/favorites.dialog';
 import { FavoritesDialogFactory } from './dialogs/favorites.dialog.factory';
 import { ProfileDialog } from './dialogs/profile.dialog';
 import { ProfileDialogFactory } from './dialogs/profile.dialog.factory';
+import { TtRequester, TT_SHORTURL_REGEXP } from './services/tt.requester';
 
 export const START_SCENE = 'START_SCENE';
 
@@ -28,6 +30,8 @@ export class StartScene {
   constructor(
     private readonly profileDialog: ProfileDialogFactory,
     private readonly favoritesDialog: FavoritesDialogFactory,
+    private readonly ttService: TtService,
+    private readonly ttRequester: TtRequester,
   ) {}
 
   @Hears('Administration')
@@ -48,6 +52,12 @@ export class StartScene {
         },
       });
     }
+  }
+
+  @Hears(TT_SHORTURL_REGEXP)
+  async $hears_tiktok(@Ctx() bot: BotContext): Promise<void> {
+    const url = message(bot).text;
+    await this.ttRequester.request(url, bot);
   }
 
   @Hears(IG_MENTION_REGEXP)

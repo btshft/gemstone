@@ -12,11 +12,15 @@ import {
   RequestStoriesSagaStates,
   RequestStoriesSagaType,
 } from './stories/request/saga.request-stories';
+import { TtSaga, TtSagaMetadata, TtSagaStates, TtSagaType } from './tt/saga.tt';
 
 export const SAGA_PROCESS_REQUEST = 'saga:process';
 
-export type AnySaga = RequestStoriesSaga | FollowersInsightSaga;
-export type SagaTypes = RequestStoriesSagaType | FollowersInsightSagaType;
+export type AnySaga = RequestStoriesSaga | FollowersInsightSaga | TtSaga;
+export type SagaTypes =
+  | RequestStoriesSagaType
+  | FollowersInsightSagaType
+  | TtSagaType;
 
 export type SagaType<TType extends SagaTypes> = TType;
 export type SagaState<TSaga extends AnySaga> = TSaga['state'];
@@ -28,6 +32,8 @@ export type SagaMetadata<
   ? RequestStoriesSagaMetadata[TState]
   : TState extends FollowersInsightSagaStates
   ? FollowersInsightSagaMetadata[TState]
+  : TState extends TtSagaStates
+  ? TtSagaMetadata[TState]
   : never;
 
 export type SagaCreate<TType extends AnySaga> = Drop<
