@@ -19,7 +19,9 @@ export class TtS3UploadHandler implements SagaHandler<TtSagaS3Upload> {
     const { metadata } = saga;
 
     const buffer = await this.ttService.video(metadata.url);
-    if (buffer.length < 1) throw new Error('Buffer is empty');
+    if (!buffer || buffer.length < 1) {
+      throw new Error('Failed to download tiktok, buffer is null or empty');
+    }
 
     const bucketName = `u${metadata.userId}-${metadata.ttUser}`;
     const key = `${metadata.ttUser}-${metadata.ttId}.mp4`;
