@@ -23,6 +23,8 @@ export class UrlService {
             headers: {
               'user-agent':
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36',
+              cookie:
+                'tt_webid=6933156765236905477; tt_webid_v2=6933156765236905477; d_ticket=8af1961d8d63d7304738d5c3f3e539da851b4;',
             },
           },
           (res) => {
