@@ -12,7 +12,7 @@ import { TtRequester, TT_SHORTURL_REGEXP } from './services/tt.requester';
 
 export const START_SCENE = 'START_SCENE';
 
-const IG_URL_REGEXP = /^(http(s)?:\/\/)?instagram\.com\/(?<username>[a-zA-Z0-9._]{4,})((\/)?|\?.*)$/i;
+const IG_URL_REGEXP = /^(http(s)?:\/\/)?(www\.)?instagram\.com\/(?<username>[a-zA-Z0-9._]{4,})(\?.*)?(\/.*)?$/i;
 const IG_MENTION_REGEXP = /^@(?<username>[a-zA-Z0-9._]{4,})$/i;
 const IG_REGEXP = /^(?<username>[a-zA-Z0-9._]{4,})$/i;
 
