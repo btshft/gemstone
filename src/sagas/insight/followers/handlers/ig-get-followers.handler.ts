@@ -16,7 +16,7 @@ import {
 
 const MAX_RECEIVE_ITERATIONS = 10;
 const MIN_RECEIVE_ITERATIONS = 3;
-const MAX_FOLLOWERS_ALLOWED = 500;
+const MAX_FOLLOWERS_ALLOWED = 2000;
 
 @Injectable()
 // eslint-disable-next-line prettier/prettier
