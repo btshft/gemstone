@@ -46,7 +46,7 @@
     "follow-redirects": "^1.13.2",
     "hbs": "^4.1.1",
     "inquirer": "^7.3.3",
-    "instagram-private-api": "^1.43.3",
+    "instagram-private-api": "^1.45.3",
     "lodash": "^4.17.20",
     "minio": "^7.0.18",
     "nestjs-telegraf": "^2.0.0-beta.3",
